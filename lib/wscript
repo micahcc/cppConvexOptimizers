@@ -1,0 +1,6 @@
+
+def build(bld):
+    bld.shlib(target = 'gradient',
+            source = 'gradient.cpp',
+            use='EIGEN',
+            export_includes = ['.'])
