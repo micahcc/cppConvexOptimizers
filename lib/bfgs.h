@@ -18,8 +18,8 @@
  * 
  *****************************************************************************/
 
-#ifndef GRADIENT_H
-#define GRADIENT_H
+#ifndef BFGS_H
+#define BFGS_H
 
 #include <iostream>
 #include <cmath>
@@ -29,8 +29,13 @@
 
 namespace npl {  
 
-class GradientOpt : public Optimizer
+class BFGSOpt : public Optimizer
 {
+private:
+    /**
+     * @brief Stores the approximate value of the hessian
+     */
+    Matrix state_Hinv;
     
 public:
     /**
@@ -38,7 +43,7 @@ public:
      *
      * @param start_x Initial state
      */
-    GradientOpt(const Vector& start_x) : Optimizer(start_x) {} ;
+    BFGSOpt(const Vector& start_x);
 
     /**
      * @brief Optimize Based on a value function and gradient function
@@ -79,9 +84,10 @@ public:
      * @return          StopReason
      */
     virtual
-    int optimize(const ComputeFunc& update, const ComputeValFunc& valfunc, 
-            const ComputeGradFunc& gradfunc, 
-            const CallBackFunc& callback = noopCallback);
+    int optimize(const ComputeFunc& update, 
+                const ComputeValFunc& valfunc, 
+                const ComputeGradFunc& gradfunc, 
+                const CallBackFunc& callback = noopCallback);
 
     /**
      * @brief Optimize Based on a combined value and gradient function
@@ -98,9 +104,9 @@ public:
      */
     virtual
     int optimize(const ComputeFunc& update, 
-            const CallBackFunc& callback = noopCallback);
+                 const CallBackFunc& callback = noopCallback);
 };
 
 }
 
-#endif // GRADIENT_H
+#endif // BFGS_H

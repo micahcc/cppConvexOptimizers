@@ -18,30 +18,54 @@
  *
  *****************************************************************************/
 
-#ifndef LINESEARCHER_H
-#define LINESEARCHER_H
+#ifndef LINESEARCH_H
+#define LINESEARCH_H
 
-#include <map>
-#include <list>
+#include "opt.h"
 
-class LineSearcher
+class Armijo
 {
-	public:
-		LineSearcher(double left, double right, double xres, double yres);
+public:
+    Armijo(const ComputeValFunc& valFunc) 
+    {
+        compVal = valFunc;
+    }
 
-		void getBest(double* xbest, double* ybest);
-		bool getNextX(double* nextx);
-		void addResult(double x, double y);
+    double opt_s;
+    double opt_beta;
+    double opt_sigma;
+    size_t opt_maxIt;
 
-	private:
-		double m_minxrange;
-		double m_minyrange;
-		
-		std::list<double> m_queue;
-		std::map<double, double> m_done;
+    /**
+     * @brief Performs a line search to find the alpha (step size) that
+     * satifies the armijo rule.
+     *
+     * @param init_val Initial energy/function value
+     * @param init_x Initial state 
+     * @param init_g Initial gradient
+     * @param direction Direction to search
+     *
+     * @return 
+     */
+    double search(double init_val, const Vector& init_x, const Vector& init_g,
+            const Vector& direction)
+    {
+        double alpha = 0;
+        Vector x = init_x;
 
-		bool m_xdone;
-		bool m_ydone;
+        for(size_t m = 0; m < opt_maxIt; m++) {
+            alpha = pow(opt_beta, m)*opt_s;
+            x = init_x + alpha*direction;
+            double val = compVal(x);
+            if(init_val - val >= -opt_sigma*alpha*init_g.dot(direction))
+                return alpha;
+        }
+
+        return alpha;
+    };
+
+private:
+    ComputeValFunc compVal;
 };
 
 #endif 

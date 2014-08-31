@@ -4,3 +4,7 @@ def build(bld):
             source = 'gradient.cpp',
             use='EIGEN',
             export_includes = ['.'])
+    bld.shlib(target = 'bfgs',
+            source = 'bfgs.cpp',
+            use='EIGEN',
+            export_includes = ['.'])

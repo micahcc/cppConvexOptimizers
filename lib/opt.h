@@ -13,32 +13,99 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file gradient.h Definition for the GradientOpt class which implements 
- * a gradient descent energy minimization (optimization) algorithm.
+ * @file opt.h Contains base class for all optimizers, defines Function types,
+ * and StopReason
  * 
  *****************************************************************************/
 
-#ifndef GRADIENT_H
-#define GRADIENT_H
+#ifndef OPT_H
+#define OPT_H
 
-#include <iostream>
-#include <cmath>
-#include <Eigen/Dense>
+namespace npl
+{
 
-#include "opt.h"
+using std::function;
+typedef Eigen::MatrixXd Matrix;
+typedef Eigen::VectorXd Vector;
 
-namespace npl {  
+typedef function<int(const Vector& x, double& value, Vector& grad)> ComputeFunc;
+typedef function<int(const Vector& x, Vector& grad)> ComputeGradFunc;
+typedef function<int(const Vector& x, double& value)> ComputeValFunc;
+typedef function<int(const Vector& x, double value, const Vector& grad)> 
+    CallBackFunc;
 
-class GradientOpt : public Optimizer
+int noopCallback(const Vector& x, double value, const Vector& grad)
+{
+    (void)(x);
+    (void)(value);
+    (void)(grad);
+    return 0;
+}
+
+enum StopReason
+{
+    ENDGRAD,    // end due to gradient below threshold
+    ENDVALUE,   // end due to change in value below threshold
+    ENDITERS,   // end due to number iterations
+    ENDFAIL     // end tue to some error
+};
+
+using std::max;
+using std::abs;
+
+
+class Optimizer
 {
     
 public:
+    Vector state_x; 
+    
+    double stop_G;
+    double stop_X;
+    double stop_F;
+    int stop_Its;
+    
     /**
-     * @brief Constructor of Gradient Optimizer
+     * @brief Maximum step size, step will be rescaled to this length if it 
+     * exceeds it after other scaling is complete.
+     */
+    double opt_maxstep;
+    
+    /**
+     * @brief Initial scale to use during optimization, actual scale may differ
+     * due to other options
+     */
+    double opt_init_scale;
+
+    /**
+     * @brief Multiply scale by this value after each iteration ( 0 < v < 1 ).
+     * Values <= 0 will be considered unused. 
+     */
+    double opt_rdec_scale; 
+
+    /**
+     * @brief Constructor
      *
      * @param start_x Initial state
      */
-    GradientOpt(const Vector& start_x) : Optimizer(start_x) {} ;
+    Optimizer(const Vector& start_x)
+    {
+        stop_G = 0.00001;
+        stop_X = 0;
+        stop_F = 0;
+        stop_Its = -1;
+
+        opt_init_scale = 1;
+        opt_rdec_scale = .99;
+
+        // don't allow scales > 1, that would lead to infinitely 
+        // increasing of scale
+
+        if(opt_rdec_scale > 1 || opt_rdec_scale < 0) 
+            throw std::invalid_argument("0 < opt_rdec_scale <= 1");
+
+        state_x = start_x;
+    };
 
     /**
      * @brief Optimize Based on a value function and gradient function
@@ -101,6 +168,6 @@ public:
             const CallBackFunc& callback = noopCallback);
 };
 
-}
+} // npl
 
-#endif // GRADIENT_H
+#endif //OPT_H

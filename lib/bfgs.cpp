@@ -18,10 +18,14 @@
  * 
  *****************************************************************************/
 
-#include "gradient.h"
+#include "bfgs.h"
 
-namespace npl
+namespace npl {
+
+BFGSOpt::BFGSOpt(const Vector& start_x) : Optimizer(start_x) 
 {
+    state_Hinv = Matrix::Identity(start_x.rows(), start_x.rows());
+};
 
 /**
  * @brief Optimize Based on a value function and gradient function
@@ -37,11 +41,12 @@ namespace npl
  *
  * @return          StopReason
  */
-int GradientOpt::optimize(const ComputeValFunc& valfunc, 
-        const ComputeGradFunc& gradfunc, const CallBackFunc& callback)
+int BFGSOpt::optimize(const ComputeValFunc& valfunc, 
+        const ComputeGradFunc& gradfunc, 
+        const CallBackFunc& callback)
 {
     return ENDFAIL;
-}
+};
 
 /**
  * @brief Optimize Based on a value function and gradient function
@@ -62,14 +67,52 @@ int GradientOpt::optimize(const ComputeValFunc& valfunc,
  *
  * @return          StopReason
  */
-int GradientOpt::optimize(const ComputeFunc& update, 
+int BFGSOpt::optimize(const ComputeFunc& update, 
         const ComputeValFunc& valfunc, 
         const ComputeGradFunc& gradfunc, 
         const CallBackFunc& callback)
 {
+    Matrix& Dk = state_Hinv;
+    Vector xkp1 = state_x;
+    Vector xk(sate_x.rows());
+    
+    Vector gkp1(sate_x.rows());
+    Vector gk(sate_x.rows());
+
+    Vector pk(sate_x.rows());
+    Vector qk(sate_x.rows());
+    Vector vk(sate_x.rows());
+
+    double tauk = 0;
+
+    //D(k+1) += p(k)p(k)'   - D(k)q(k)q(k)'D(k) + Z(k)T(k)v(k)v(k)'
+    //          ----------    ----------------- 
+    //         (p(k)'q(k))      q(k)'D(k)q(k)
+    for() {
+        // step, using line search
+        xk = xkp1;
+        gk = gkp1;
+        xkp1 = linesearch();
+        if(gradfunc(xkp1, gk) != 0)
+            return ENDFAIL;
+
+        // update information 
+        pk = xkp1 - xk;
+        qk = gkp1 - gk;
+        tauk = qk.dot(Dk*qk);
+
+        if(tauk < 1E-20) 
+            vk.setZero();
+        else
+            vk = pk/pk.dot(qk) - Dk*qk/tauk;
+
+        Dk += pk*pk.transpose()/pk.dot(qk) - Dk*qk*qk.transpose()*Dk/
+                    (qk.dot(Dk*qk)) + opt_zeta*tauk*vk*vk.transpose();
+    }
+                   
     return ENDFAIL;
 }
-
+    
 /**
  * @brief Optimize Based on a combined value and gradient function
  * Note that during line search, we don't always use the gradient,
@@ -83,48 +126,9 @@ int GradientOpt::optimize(const ComputeFunc& update,
  *
  * @return          StopReason
  */
-int GradientOpt::optimize(const ComputeFunc& update, 
-        const CallBackFunc& callback)
+int BFGSOpt::optimize(const ComputeFunc& update, const CallBackFunc& callback)
 {
-    Vector grad(state_x.rows());
-    Vector prevx(state_x.rows());
-
-    double cur = 0;
-    double prev = 0;
-    double delta = stop_F+1;
-    double stepsize = opt_init_scale;
-    for(int iter  = 0 ; (stop_Its <= 0 || iter < stop_Its); iter++) {
-        prev = cur;
-
-        if(update(state_x, cur, grad) != 0)
-            return ENDFAIL;
-
-        if(grad.norm() < stop_G)
-            return ENDGRAD;
-        if(fabs(prev-cur) < stop_F)
-            return ENDVALUE;
-
-        // compute step, (in grad variable)
-        grad = -grad*stepsize;
-
-        double gn = grad.norm();
-        if(gn < stop_X)
-            return ENDVALUE;
-
-        if(gn > opt_maxstep)
-            grad = opt_maxstep*grad/gn;
-
-        // perform step
-        state_x += grad;
-
-        // rescale step
-        stepsize *= opt_rdec_scale;
-
-        // call back at end of iter
-        callback(state_x, cur, grad);
-    }
-
-    return ENDITERS;
-}
+    return ENDFAIL;   
+};
 
 }
