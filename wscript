@@ -107,4 +107,4 @@ def build(bld):
     bld.add_post_fun(waf_unit_test.summary)
 
     # recurse into other wscript files
-    bld.recurse('lib')
+    bld.recurse('lib testing')

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file gradient.cpp Implemenation of the GradientOpt class which implements 
- * a gradient descent energy minimization (optimization) algorithm.
+ * @file bfgs.cpp Implemenation of the BFGSOpt class which implements 
+ * a BFGS optimization (energy minimization) algorithm.
  * 
  *****************************************************************************/
 
@@ -77,10 +77,15 @@ BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
  */
 int BFGSOpt::optimize()
 {
+    double gradstop = this->stop_G*this->stop_G;
+    double stepstop = this->stop_X*this->stop_X;
+    double valstop = this->stop_F;
+
     const double ZETA = 1;
     Matrix& Dk = state_Hinv;
     Vector gk(state_x.rows()); // gradient
     double f_xk; // value at current position
+    double f_xkm1; // value at previous position
 
     Vector xkprev; 
     double tauk = 0;
@@ -90,17 +95,17 @@ int BFGSOpt::optimize()
     //          ----------    ----------------- 
     //         (p(k)'q(k))      q(k)'D(k)q(k)
     m_compFG(state_x, f_xk, gk);
-    for(int iter = 0; iter < stop_Its; iter++) {
+    for(int iter = 0; stop_Its <= 0 || iter < stop_Its; iter++) {
 
         // optain direction
         dk = -Dk*gk;
 
         // compute step size
         double alpha = m_lsearch.search(f_xk, state_x, gk, dk);
-#ifdef DEBUG
-        fprintf(stderr, "New Alpha: %f\n", alpha);
-#endif 
         pk = alpha*dk;
+        
+        if(pk.squaredNorm() < stepstop)
+            return ENDSTEP;
 
         // step
         xkprev = state_x;
@@ -108,11 +113,16 @@ int BFGSOpt::optimize()
         
         // update gradient, value
         qk = -gk;
+        f_xkm1 = f_xk;
         m_compFG(state_x, f_xk, gk);
         qk += gk;
-#ifdef DEBUG
-        fprintf(stderr, "Value: %f\n", f_xk);
-#endif 
+
+        if(gk.squaredNorm() < gradstop)
+            return ENDGRAD;
+        
+        if(abs(f_xk - f_xkm1) < valstop)
+            return ENDVALUE;
+
 
         // update information inverse hessian
         tauk = qk.dot(Dk*qk);
@@ -123,6 +133,8 @@ int BFGSOpt::optimize()
 
         Dk += pk*pk.transpose()/pk.dot(qk) - Dk*qk*qk.transpose()*Dk/
                     (qk.dot(Dk*qk)) + ZETA*tauk*vk*vk.transpose();
+
+        m_callback(state_x, f_xk, gk, iter);
     }
                    
     return ENDFAIL;

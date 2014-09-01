@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file gradient.h Definition for the GradientOpt class which implements 
- * a gradient descent energy minimization (optimization) algorithm.
+ * @file bfgs.cpp Declaration of the BFGSOpt class which implements 
+ * a BFGS optimization (energy minimization) algorithm.
  * 
  *****************************************************************************/
 

@@ -21,6 +21,9 @@
 #ifndef OPT_H
 #define OPT_H
 
+#include <functional>
+#include <Eigen/Dense>
+
 namespace npl
 {
 
@@ -31,19 +34,58 @@ typedef Eigen::VectorXd Vector;
 typedef function<int(const Vector& x, double& v, Vector& g)> ValGradFunc;
 typedef function<int(const Vector& x, Vector& g)> GradFunc;
 typedef function<int(const Vector& x, double& v)> ValFunc;
-typedef function<int(const Vector& x, double v, const Vector& g)> CallBackFunc;
+typedef function<int(const Vector& x, double v, const Vector& g, size_t iter)> CallBackFunc;
 
-int noopCallback(const Vector& x, double value, const Vector& grad)
+/**
+ * @brief Tests a gradient function using the value function. 
+ *
+ * @param error     Error between analytical and numeric gradient
+ * @param x         Position to test
+ * @param stepsize  Step to take when testing gradient (will be taken in each
+ *                  dimension successively)
+ * @param tol       Tolerance, error below the tolerance will cause the
+ *                  function to return 0, higher error will cause the function to return -1
+ * @param valfunc   Function values compute
+ * @param gradfunc  Function gradient compute
+ *
+ * @return 
+ */
+int testgrad(double& error, const Vector& x, double stepsize, double tol, 
+        const ValFunc& valfunc, const GradFunc& gradfunc);
+
+/**
+ * @brief Implements generized rosenbrock gradient
+ *
+ * @param x Position vector
+ * @param gradient Gradient at the position
+ *
+ * @return 
+ */
+int gRosenbrock_G(const Vector& x, Vector& gradient);
+
+   /**
+ * @brief Implements generized rosenbrock value
+ *
+ * @param x Position vector
+ * @param v values
+ *
+ * @return 
+ */
+int gRosenbrock_V(const Vector& x, double& v);
+
+int noopCallback(const Vector& x, double value, const Vector& grad, size_t iter)
 {
     (void)(x);
     (void)(value);
     (void)(grad);
+    (void)(iter);
     return 0;
 }
 
 enum StopReason
 {
     ENDGRAD,    // end due to gradient below threshold
+    ENDSTEP,    // end due to step size below threshold
     ENDVALUE,   // end due to change in value below threshold
     ENDITERS,   // end due to number iterations
     ENDFAIL     // end tue to some error
@@ -98,19 +140,7 @@ public:
      */
     Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
                 const ValGradFunc& valgradfunc, 
-                const CallBackFunc& callback = noopCallback) : state_x(dim)
-    {
-        stop_G = 0.00001;
-        stop_X = 0;
-        stop_F = 0;
-        stop_Its = -1;
-
-        m_compF = valfunc;
-        m_compG = gradfunc;
-        m_compFG = valgradfunc;
-
-        m_callback = callback;
-    };
+                const CallBackFunc& callback = noopCallback);
     
     /**
      * @brief Constructor for optimizer function.
@@ -124,22 +154,7 @@ public:
      *                  iteration (for instance, to debug)
      */
     Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
-                const CallBackFunc& callback = noopCallback) : state_x(dim)
-    {
-        stop_G = 0.00001;
-        stop_X = 0;
-        stop_F = 0;
-        stop_Its = -1;
-
-        m_compF = valfunc;
-        m_compG = gradfunc;
-        m_compFG = [&](const Vector& x, double& value, Vector& grad) -> int
-        {
-            return !(valfunc(x, value)==0 && gradfunc(x, grad)==0);
-        };
-
-        m_callback = callback;
-    };
+                const CallBackFunc& callback = noopCallback);
     
     /**
      * @brief Perform optimization

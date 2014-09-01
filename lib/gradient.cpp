@@ -116,7 +116,7 @@ int GradientOpt::optimize()
         stepsize *= opt_rdec_scale;
 
         // call back at end of iter
-        m_callback(state_x, cur, grad);
+        m_callback(state_x, cur, grad, iter);
     }
 
     return ENDITERS;

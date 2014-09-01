@@ -1,10 +1,14 @@
 
 def build(bld):
+    bld.shlib(target = 'opt',
+            source = 'opt.cpp',
+            use='EIGEN',
+            export_includes = ['.'])
     bld.shlib(target = 'gradient',
             source = 'gradient.cpp',
-            use='EIGEN',
+            use='opt EIGEN',
             export_includes = ['.'])
     bld.shlib(target = 'bfgs',
             source = 'bfgs.cpp',
-            use='EIGEN',
+            use='opt EIGEN',
             export_includes = ['.'])
