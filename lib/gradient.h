@@ -29,76 +29,63 @@
 
 namespace npl {  
 
-class GradientOpt : public Optimizer
+class GradientOpt : virtual public Optimizer
 {
-    
 public:
     /**
-     * @brief Constructor of Gradient Optimizer
-     *
-     * @param start_x Initial state
+     * @brief Maximum step size, step will be rescaled to this length if it 
+     * exceeds it after other scaling is complete.
      */
-    GradientOpt(const Vector& start_x) : Optimizer(start_x) {} ;
+    double opt_maxstep;
+    
+    /**
+     * @brief Initial scale to use during optimization, actual scale may differ
+     * due to other options
+     */
+    double opt_init_scale;
 
     /**
-     * @brief Optimize Based on a value function and gradient function
-     * separately. Since we do a line search, we don't always use the gradient,
-     * so if there is additional overhead of the gradient, you can avoid it by
-     * using this function.
-     *
-     * @param valfunc   Function which returns the function value at a position
-     * @param gradfunc  Function which returns the gradient of the function at
-     *                  a position
-     * @param callback  Called at the end of each iteration (not during line
-     *                  search though)
-     *
-     * @return          StopReason
+     * @brief Multiply scale by this value after each iteration ( 0 < v < 1 ).
+     * Values <= 0 will be considered unused. 
      */
-    virtual 
-    int optimize(const ComputeValFunc& valfunc, 
-                const ComputeGradFunc& gradfunc, 
+    double opt_rdec_scale; 
+
+
+    /**
+     * @brief Constructor for optimizer function.
+     *
+     * @param dim       Dimensionality of state vector
+     * @param valfunc   Function which computes the energy of the underlying
+     *                  mathematical function
+     * @param gradfunc  Function which computes the gradient of energy in the
+     *                  underlying mathematical function
+     * @param valgradfunc 
+     *                  Function which computes the both the energy and
+     *                  gradient in the underlying mathematical function
+     * @param callback  Function which should be called at the end of each
+     *                  iteration (for instance, to debug)
+     */
+    GradientOpt(size_t dim, const ValFunc& valfunc, 
+                const GradFunc& gradfunc, 
+                const ValGradFunc& valgradfunc, 
                 const CallBackFunc& callback = noopCallback);
-
+    
     /**
-     * @brief Optimize Based on a value function and gradient function
-     * separately. When both gradient and value are needed it will call update,
-     * when it needs just the gradient it will call gradFunc, and when it just 
-     * needs the value it will cal valFunc. This is always the most efficient,
-     * assuming there is additional cost of computing the gradient or value, but 
-     * its obviously more complicated. 
+     * @brief Constructor for optimizer function.
      *
-     * @param update    Function which returns the function value at a
-     *                  position, and the gradient at the same position
-     *                  (through the grad argument)
-     * @param valfunc   Function which returns the function value at a position
-     * @param gradfunc  Function which returns the gradient of the function at
-     *                  a position
-     * @param callback  Called at the end of each iteration (not during line
-     *                  search though)
-     *
-     * @return          StopReason
+     * @param dim       Dimensionality of state vector
+     * @param valfunc   Function which computes the energy of the underlying
+     *                  mathematical function
+     * @param gradfunc  Function which computes the gradient of energy in the
+     *                  underlying mathematical function
+     * @param callback  Function which should be called at the end of each
+     *                  iteration (for instance, to debug)
      */
-    virtual
-    int optimize(const ComputeFunc& update, const ComputeValFunc& valfunc, 
-            const ComputeGradFunc& gradfunc, 
-            const CallBackFunc& callback = noopCallback);
-
-    /**
-     * @brief Optimize Based on a combined value and gradient function
-     * Note that during line search, we don't always use the gradient,
-     * so if there is additional overhead of the gradient, you can avoid it by
-     * using optimize(ComputeValFunc, ComputeGradFunc). 
-     *
-     * @param update    Function which returns the function value at a position 
-     *                  and places gradient in the grad argument
-     * @param callback  Called at the end of each iteration (not during line
-     *                  search though)
-     *
-     * @return          StopReason
-     */
-    virtual
-    int optimize(const ComputeFunc& update, 
-            const CallBackFunc& callback = noopCallback);
+    GradientOpt(size_t dim, const ValFunc& valfunc, 
+                const GradFunc& gradfunc, 
+                const CallBackFunc& callback = noopCallback);
+public:
+    int optimize();
 };
 
 }

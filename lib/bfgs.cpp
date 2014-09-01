@@ -22,31 +22,46 @@
 
 namespace npl {
 
-BFGSOpt::BFGSOpt(const Vector& start_x) : Optimizer(start_x) 
+/**
+ * @brief Constructor for optimizer function.
+ *
+ * @param dim       Dimension of state variable
+ * @param valfunc   Function which computes the energy of the underlying
+ *                  mathematical function
+ * @param gradfunc  Function which computes the gradient of energy in the
+ *                  underlying mathematical function
+ * @param callback  Function which should be called at the end of each
+ *                  iteration (for instance, to debug)
+ */
+BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, 
+        const GradFunc& gradfunc, const CallBackFunc& callback) 
+        : Optimizer(dim, valfunc, gradfunc, callback), m_lsearch(valfunc)
 {
-    state_Hinv = Matrix::Identity(start_x.rows(), start_x.rows());
+    state_Hinv = Matrix::Identity(dim, dim);
 };
 
 /**
- * @brief Optimize Based on a value function and gradient function
- * separately. Since we do a line search, we don't always use the gradient,
- * so if there is additional overhead of the gradient, you can avoid it by
- * using this function.
+ * @brief Constructor for optimizer function.
  *
- * @param valfunc   Function which returns the function value at a position
- * @param gradfunc  Function which returns the gradient of the function at
- *                  a position
- * @param callback  Called at the end of each iteration (not during line
- *                  search though)
- *
- * @return          StopReason
+ * @param dim       Dimension of state variable
+ * @param valfunc   Function which computes the energy of the underlying
+ *                  mathematical function
+ * @param gradfunc  Function which computes the gradient of energy in the
+ *                  underlying mathematical function
+ * @param gradAndValFunc 
+ *                  Function which computes the energy and gradient in the
+ *                  underlying mathematical function
+ * @param callback  Function which should be called at the end of each
+ *                  iteration (for instance, to debug)
  */
-int BFGSOpt::optimize(const ComputeValFunc& valfunc, 
-        const ComputeGradFunc& gradfunc, 
-        const CallBackFunc& callback)
+BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
+        const ValGradFunc& gradAndValFunc, const CallBackFunc& callback) 
+        : Optimizer(dim, valfunc, gradfunc, gradAndValFunc, callback),
+        m_lsearch(valfunc)
 {
-    return ENDFAIL;
+    state_Hinv = Matrix::Identity(dim, dim);
 };
+
 
 /**
  * @brief Optimize Based on a value function and gradient function
@@ -56,79 +71,102 @@ int BFGSOpt::optimize(const ComputeValFunc& valfunc,
  * assuming there is additional cost of computing the gradient or value, but 
  * its obviously more complicated. 
  *
- * @param update    Function which returns the function value at a
- *                  position, and the gradient at the same position
- *                  (through the grad argument)
- * @param valfunc   Function which returns the function value at a position
- * @param gradfunc  Function which returns the gradient of the function at
- *                  a position
- * @param callback  Called at the end of each iteration (not during line
- *                  search though)
+ * @param   x_init Starting value for optimization
  *
  * @return          StopReason
  */
-int BFGSOpt::optimize(const ComputeFunc& update, 
-        const ComputeValFunc& valfunc, 
-        const ComputeGradFunc& gradfunc, 
-        const CallBackFunc& callback)
+int BFGSOpt::optimize()
 {
+    const double ZETA = 1;
     Matrix& Dk = state_Hinv;
-    Vector xkp1 = state_x;
-    Vector xk(sate_x.rows());
-    
-    Vector gkp1(sate_x.rows());
-    Vector gk(sate_x.rows());
+    Vector gk(state_x.rows()); // gradient
+    double f_xk; // value at current position
 
-    Vector pk(sate_x.rows());
-    Vector qk(sate_x.rows());
-    Vector vk(sate_x.rows());
-
+    Vector xkprev; 
     double tauk = 0;
+    Vector pk, qk, dk, vk;
 
     //D(k+1) += p(k)p(k)'   - D(k)q(k)q(k)'D(k) + Z(k)T(k)v(k)v(k)'
     //          ----------    ----------------- 
     //         (p(k)'q(k))      q(k)'D(k)q(k)
-    for() {
-        // step, using line search
-        xk = xkp1;
-        gk = gkp1;
-        xkp1 = linesearch();
-        if(gradfunc(xkp1, gk) != 0)
-            return ENDFAIL;
+    m_compFG(state_x, f_xk, gk);
+    for(int iter = 0; iter < stop_Its; iter++) {
 
-        // update information 
-        pk = xkp1 - xk;
-        qk = gkp1 - gk;
+        // optain direction
+        dk = -Dk*gk;
+
+        // compute step size
+        double alpha = m_lsearch.search(f_xk, state_x, gk, dk);
+#ifdef DEBUG
+        fprintf(stderr, "New Alpha: %f\n", alpha);
+#endif 
+        pk = alpha*dk;
+
+        // step
+        xkprev = state_x;
+        state_x += pk;
+        
+        // update gradient, value
+        qk = -gk;
+        m_compFG(state_x, f_xk, gk);
+        qk += gk;
+#ifdef DEBUG
+        fprintf(stderr, "Value: %f\n", f_xk);
+#endif 
+
+        // update information inverse hessian
         tauk = qk.dot(Dk*qk);
-
         if(tauk < 1E-20) 
             vk.setZero();
         else
             vk = pk/pk.dot(qk) - Dk*qk/tauk;
 
         Dk += pk*pk.transpose()/pk.dot(qk) - Dk*qk*qk.transpose()*Dk/
-                    (qk.dot(Dk*qk)) + opt_zeta*tauk*vk*vk.transpose();
+                    (qk.dot(Dk*qk)) + ZETA*tauk*vk*vk.transpose();
     }
                    
     return ENDFAIL;
 }
-    
-/**
- * @brief Optimize Based on a combined value and gradient function
- * Note that during line search, we don't always use the gradient,
- * so if there is additional overhead of the gradient, you can avoid it by
- * using optimize(ComputeValFunc, ComputeGradFunc). 
- *
- * @param update    Function which returns the function value at a position 
- *                  and places gradient in the grad argument
- * @param callback  Called at the end of each iteration (not during line
- *                  search though)
- *
- * @return          StopReason
- */
-int BFGSOpt::optimize(const ComputeFunc& update, const CallBackFunc& callback)
+
+BFGSOpt::Armijo::Armijo(const ValFunc& valFunc) 
 {
-    return ENDFAIL;   
+    opt_s = 1;
+    opt_beta = .5; // slowish
+    opt_sigma = 1e-5;
+    opt_maxIt = 10;
+
+    compVal = valFunc;
+}
+    
+double BFGSOpt::Armijo::search(double init_val, const Vector& init_x, const
+        Vector& init_g, const Vector& direction)
+{
+#ifdef DEBUG
+        fprintf(stderr, "Linesearch\n");
+#endif 
+    Vector x = init_x;
+    double gradDotDir = init_g.dot(direction); 
+    double alpha = 0;
+    double v = 0;
+
+    if(opt_s <= 0)
+        throw std::invalid_argument("opt_s must be > 0");
+
+    for(size_t m = 0; m < opt_maxIt; m++) {
+        alpha = pow(opt_beta, m)*opt_s;
+        x = init_x + alpha*direction;
+        compVal(x, v);
+
+#ifdef DEBUG
+        fprintf(stderr, "Alpha: %f, Init Val: %f, Val: %f, Sigma: %f, gd: %f",
+                alpha, init_val, v, opt_sigma, gradDotDir);
+#endif 
+        if(init_val - v >= -opt_sigma*alpha*gradDotDir)
+            return alpha;
+    }
+
+    return 0;
 };
+
 
 }

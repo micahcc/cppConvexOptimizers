@@ -28,11 +28,10 @@ using std::function;
 typedef Eigen::MatrixXd Matrix;
 typedef Eigen::VectorXd Vector;
 
-typedef function<int(const Vector& x, double& value, Vector& grad)> ComputeFunc;
-typedef function<int(const Vector& x, Vector& grad)> ComputeGradFunc;
-typedef function<int(const Vector& x, double& value)> ComputeValFunc;
-typedef function<int(const Vector& x, double value, const Vector& grad)> 
-    CallBackFunc;
+typedef function<int(const Vector& x, double& v, Vector& g)> ValGradFunc;
+typedef function<int(const Vector& x, Vector& g)> GradFunc;
+typedef function<int(const Vector& x, double& v)> ValFunc;
+typedef function<int(const Vector& x, double v, const Vector& g)> CallBackFunc;
 
 int noopCallback(const Vector& x, double value, const Vector& grad)
 {
@@ -58,114 +57,104 @@ class Optimizer
 {
     
 public:
-    Vector state_x; 
+    /**
+     * @brief State variable, set to initialize
+     */
+    Vector state_x;
     
+    /**
+     * @brief Stop when graient magnitde falls below this value
+     */
     double stop_G;
+
+    /**
+     * @brief Stop when step size drops below this value
+     */
     double stop_X;
+
+    /**
+     * @brief Stop when change in function value drops below this value
+     */
     double stop_F;
+
+    /**
+     * @brief Stop after this many iterations (does not include linesearch)
+     */
     int stop_Its;
     
     /**
-     * @brief Maximum step size, step will be rescaled to this length if it 
-     * exceeds it after other scaling is complete.
-     */
-    double opt_maxstep;
-    
-    /**
-     * @brief Initial scale to use during optimization, actual scale may differ
-     * due to other options
-     */
-    double opt_init_scale;
-
-    /**
-     * @brief Multiply scale by this value after each iteration ( 0 < v < 1 ).
-     * Values <= 0 will be considered unused. 
-     */
-    double opt_rdec_scale; 
-
-    /**
-     * @brief Constructor
+     * @brief Constructor for optimizer function.
      *
-     * @param start_x Initial state
+     * @param dim       Dimensionality of state vector
+     * @param valfunc   Function which computes the energy of the underlying
+     *                  mathematical function
+     * @param gradfunc  Function which computes the gradient of energy in the
+     *                  underlying mathematical function
+     * @param valgradfunc 
+     *                  Function which computes the both the energy and
+     *                  gradient in the underlying mathematical function
+     * @param callback  Function which should be called at the end of each
+     *                  iteration (for instance, to debug)
      */
-    Optimizer(const Vector& start_x)
+    Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
+                const ValGradFunc& valgradfunc, 
+                const CallBackFunc& callback = noopCallback) : state_x(dim)
     {
         stop_G = 0.00001;
         stop_X = 0;
         stop_F = 0;
         stop_Its = -1;
 
-        opt_init_scale = 1;
-        opt_rdec_scale = .99;
+        m_compF = valfunc;
+        m_compG = gradfunc;
+        m_compFG = valgradfunc;
 
-        // don't allow scales > 1, that would lead to infinitely 
-        // increasing of scale
-
-        if(opt_rdec_scale > 1 || opt_rdec_scale < 0) 
-            throw std::invalid_argument("0 < opt_rdec_scale <= 1");
-
-        state_x = start_x;
+        m_callback = callback;
     };
-
+    
     /**
-     * @brief Optimize Based on a value function and gradient function
-     * separately. Since we do a line search, we don't always use the gradient,
-     * so if there is additional overhead of the gradient, you can avoid it by
-     * using this function.
+     * @brief Constructor for optimizer function.
      *
-     * @param valfunc   Function which returns the function value at a position
-     * @param gradfunc  Function which returns the gradient of the function at
-     *                  a position
-     * @param callback  Called at the end of each iteration (not during line
-     *                  search though)
+     * @param dim       Dimensionality of state vector
+     * @param valfunc   Function which computes the energy of the underlying
+     *                  mathematical function
+     * @param gradfunc  Function which computes the gradient of energy in the
+     *                  underlying mathematical function
+     * @param callback  Function which should be called at the end of each
+     *                  iteration (for instance, to debug)
+     */
+    Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
+                const CallBackFunc& callback = noopCallback) : state_x(dim)
+    {
+        stop_G = 0.00001;
+        stop_X = 0;
+        stop_F = 0;
+        stop_Its = -1;
+
+        m_compF = valfunc;
+        m_compG = gradfunc;
+        m_compFG = [&](const Vector& x, double& value, Vector& grad) -> int
+        {
+            return !(valfunc(x, value)==0 && gradfunc(x, grad)==0);
+        };
+
+        m_callback = callback;
+    };
+    
+    /**
+     * @brief Perform optimization
      *
-     * @return          StopReason
+     * @return StopReason
      */
     virtual 
-    int optimize(const ComputeValFunc& valfunc, 
-                const ComputeGradFunc& gradfunc, 
-                const CallBackFunc& callback = noopCallback);
+    int optimize() { return 0; };
 
-    /**
-     * @brief Optimize Based on a value function and gradient function
-     * separately. When both gradient and value are needed it will call update,
-     * when it needs just the gradient it will call gradFunc, and when it just 
-     * needs the value it will cal valFunc. This is always the most efficient,
-     * assuming there is additional cost of computing the gradient or value, but 
-     * its obviously more complicated. 
-     *
-     * @param update    Function which returns the function value at a
-     *                  position, and the gradient at the same position
-     *                  (through the grad argument)
-     * @param valfunc   Function which returns the function value at a position
-     * @param gradfunc  Function which returns the gradient of the function at
-     *                  a position
-     * @param callback  Called at the end of each iteration (not during line
-     *                  search though)
-     *
-     * @return          StopReason
-     */
-    virtual
-    int optimize(const ComputeFunc& update, const ComputeValFunc& valfunc, 
-            const ComputeGradFunc& gradfunc, 
-            const CallBackFunc& callback = noopCallback);
+protected:
 
-    /**
-     * @brief Optimize Based on a combined value and gradient function
-     * Note that during line search, we don't always use the gradient,
-     * so if there is additional overhead of the gradient, you can avoid it by
-     * using optimize(ComputeValFunc, ComputeGradFunc). 
-     *
-     * @param update    Function which returns the function value at a position 
-     *                  and places gradient in the grad argument
-     * @param callback  Called at the end of each iteration (not during line
-     *                  search though)
-     *
-     * @return          StopReason
-     */
-    virtual
-    int optimize(const ComputeFunc& update, 
-            const CallBackFunc& callback = noopCallback);
+    ValGradFunc m_compFG;
+    GradFunc m_compG;
+    ValFunc m_compF;
+    CallBackFunc m_callback;
 };
 
 } // npl

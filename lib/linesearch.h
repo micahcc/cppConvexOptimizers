@@ -23,50 +23,115 @@
 
 #include "opt.h"
 
-class Armijo
+namespace npl 
 {
-public:
-    Armijo(const ComputeValFunc& valFunc) 
-    {
-        compVal = valFunc;
-    }
 
-    double opt_s;
-    double opt_beta;
-    double opt_sigma;
-    size_t opt_maxIt;
+template <typename T>
+inline 
+void debug(T v)
+{
+#ifdef DEBUG
+    cerr << v;
+#endif //DEBUG
+}
 
-    /**
-     * @brief Performs a line search to find the alpha (step size) that
-     * satifies the armijo rule.
-     *
-     * @param init_val Initial energy/function value
-     * @param init_x Initial state 
-     * @param init_g Initial gradient
-     * @param direction Direction to search
-     *
-     * @return 
-     */
-    double search(double init_val, const Vector& init_x, const Vector& init_g,
-            const Vector& direction)
-    {
-        double alpha = 0;
-        Vector x = init_x;
+//class StrongWolfe
+//{
+//public:
+//    StrongWolfe(const ComputeValFunc& valFunc const ComputeGradFunc& gradFunc) 
+//    {
+//        compVal = valFunc;
+//        compGrad = gradFunc;
+//    }
+//
+//    /**
+//     * @brief Maximum step, if this is <= 0, then a quadratic fit will be used 
+//     * to estimate a guess.
+//     */
+//    double opt_s;
+//
+//    /**
+//     * @brief Power function base, values closer to 0 will decrease step size
+//     * faster than ones close to 1.
+//     */
+//    double opt_beta;
+//
+//    /**
+//     * @brief Theshold for stopping
+//     */
+//    double opt_sigma;
+//
+//    /**
+//     * @brief Maximum number of iterations
+//     */
+//    int opt_maxIt; 
+//
+//    double search(double v_init, const Vector& x_init, const Vector& dir)
+//    {
+//        if(opt_alpha_step <= 0)
+//            throw std::invalid_argument("opt_alpha_step must be > 0");
+//
+//        const double ALPHA_START = 1;
+//        const double ALPHA_MAX = 1;
+//
+//        double dPhi_dAlpha_init = g_init.dot(dir);
+//        double alpha_prev = 0;
+//        double alpha = ALPHA_START;
+//        double alpha_max = ALPHA_MAX;
+//
+//        Vector g; // gradient
+//
+//        double v_prev;
+//        double v = v_init; // value
+//        for(int iter = 0; iter < opt_maxIt; iter++) {
+//            x = x_init + alpha*direction;
+//            v_prev = v;
+//            if(comp(x, v, g) != 0)
+//                throw std::domain_error("Update function returned error");
+//
+//#ifdef DEBUG
+//            fprintf(stderr, "Alpha: %f, Init Val: %f, Val: %f, C1: %f, phi'(0): %f\n",
+//                    alpha, v_init, v, opt_c1, dPhi_dAlpha_init);
+//#endif 
+//            if(v > v_init + opt_c1*alpha*dPhi_dAlpha_init || 
+//                        (iter>0 && v >= v_prev )) 
+//                return zoom(v_prev, v);
+// 
+//            double dPhi_dAlpha = g.dot(dir);
+//#ifdef DEBUG
+//            fprintf(stderr, "phi'(alpha): %f, C: %f, phi'(0): %f\n",
+//                    dPhi_dAlpha, opt_c2, dPhi_dAlpha_init);
+//#endif 
+//            if(fabs(dPhi_dAlpha) <= -opt_c2*dPhi_dAlpha_init)
+//                return alpha;
+//
+//            if(dPhi_dAlpha >= 0)
+//                return zoom(alpha, alpha_prev);
+//
+//            alpha_prev = alpha;
+//            alpha *= opt_alpha_step;
+//
+//            if(alpha == alpha_prev)
+//                throw std::runtime_error("Repeated alpha, will form inf loop");
+//        }
+//
+//        return 0;
+//    }
+//
+//    double zoom(double alpha_low, double alpha_hi) 
+//    {
+//#ifdef DEBUG
+//            fprintf(stderr, "Zoom(%f, %f)\n", alpha_low, alpha_hi);
+//#endif 
+//
+//            
+//    }
+//
+//private:
+//    ComputeValFunc compVal;
+//};
 
-        for(size_t m = 0; m < opt_maxIt; m++) {
-            alpha = pow(opt_beta, m)*opt_s;
-            x = init_x + alpha*direction;
-            double val = compVal(x);
-            if(init_val - val >= -opt_sigma*alpha*init_g.dot(direction))
-                return alpha;
-        }
-
-        return alpha;
-    };
-
-private:
-    ComputeValFunc compVal;
-};
+}
 
 #endif 
 

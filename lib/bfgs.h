@@ -29,82 +29,81 @@
 
 namespace npl {  
 
-class BFGSOpt : public Optimizer
+class BFGSOpt : virtual public Optimizer
 {
 private:
     /**
-     * @brief Stores the approximate value of the hessian
+     * @brief Stores the approximate value of the inverse hessian
      */
     Matrix state_Hinv;
-    
+
 public:
+    
     /**
-     * @brief Constructor of Gradient Optimizer
-     *
-     * @param start_x Initial state
+     * @brief Implementation of Armijo approximate line search algorithm
      */
-    BFGSOpt(const Vector& start_x);
+    class Armijo
+    {
+    public:
+        Armijo(const ValFunc& valFunc);
+
+        /**
+         * @brief Maximum step, if this is <= 0, then a quadratic fit will be used 
+         * to estimate a guess.
+         */
+        double opt_s;
+
+        /**
+         * @brief Power function base, values closer to 0 will decrease step size
+         * faster than ones close to 1.
+         */
+        double opt_beta;
+
+        /**
+         * @brief Theshold for stopping
+         */
+        double opt_sigma;
+
+        /**
+         * @brief Maximum number of iterations
+         */
+        int opt_maxIt; 
+
+        /**
+         * @brief Performs a line search to find the alpha (step size) that
+         * satifies the armijo rule.
+         *
+         * @param init_val Initial energy/function value
+         * @param init_x Initial state 
+         * @param init_g Initial gradient
+         * @param direction Direction to search
+         *
+         * @return 
+         */
+        double search(double init_val, const Vector& init_x, const Vector& init_g,
+                const Vector& direction);
+
+    private:
+        ValFunc compVal;
+    };
+
+
+    BFGSOpt(size_t dim, const ValFunc& valfunc, 
+            const GradFunc& gradfunc, 
+            const CallBackFunc& callback = noopCallback);
+
+    BFGSOpt(size_t dim, const ValFunc& valfunc, 
+            const GradFunc& gradfunc, 
+            const ValGradFunc& gradAndValFunc, 
+            const CallBackFunc& callback = noopCallback);
 
     /**
-     * @brief Optimize Based on a value function and gradient function
-     * separately. Since we do a line search, we don't always use the gradient,
-     * so if there is additional overhead of the gradient, you can avoid it by
-     * using this function.
-     *
-     * @param valfunc   Function which returns the function value at a position
-     * @param gradfunc  Function which returns the gradient of the function at
-     *                  a position
-     * @param callback  Called at the end of each iteration (not during line
-     *                  search though)
-     *
-     * @return          StopReason
+     * @brief Armijo line search class, note that it has several options that
+     * may need to be set
      */
-    virtual 
-    int optimize(const ComputeValFunc& valfunc, 
-                const ComputeGradFunc& gradfunc, 
-                const CallBackFunc& callback = noopCallback);
+    Armijo m_lsearch;
 
-    /**
-     * @brief Optimize Based on a value function and gradient function
-     * separately. When both gradient and value are needed it will call update,
-     * when it needs just the gradient it will call gradFunc, and when it just 
-     * needs the value it will cal valFunc. This is always the most efficient,
-     * assuming there is additional cost of computing the gradient or value, but 
-     * its obviously more complicated. 
-     *
-     * @param update    Function which returns the function value at a
-     *                  position, and the gradient at the same position
-     *                  (through the grad argument)
-     * @param valfunc   Function which returns the function value at a position
-     * @param gradfunc  Function which returns the gradient of the function at
-     *                  a position
-     * @param callback  Called at the end of each iteration (not during line
-     *                  search though)
-     *
-     * @return          StopReason
-     */
-    virtual
-    int optimize(const ComputeFunc& update, 
-                const ComputeValFunc& valfunc, 
-                const ComputeGradFunc& gradfunc, 
-                const CallBackFunc& callback = noopCallback);
-
-    /**
-     * @brief Optimize Based on a combined value and gradient function
-     * Note that during line search, we don't always use the gradient,
-     * so if there is additional overhead of the gradient, you can avoid it by
-     * using optimize(ComputeValFunc, ComputeGradFunc). 
-     *
-     * @param update    Function which returns the function value at a position 
-     *                  and places gradient in the grad argument
-     * @param callback  Called at the end of each iteration (not during line
-     *                  search though)
-     *
-     * @return          StopReason
-     */
-    virtual
-    int optimize(const ComputeFunc& update, 
-                 const CallBackFunc& callback = noopCallback);
+    int optimize();
 };
 
 }
