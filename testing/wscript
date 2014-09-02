@@ -5,3 +5,7 @@ def build(bld):
             source='bfgs_test1.cpp', 
             use='bfgs')
 
+    bld.program(install_path='${PREFIX}/tests', features='test', 
+            target='lbfgs_test1', 
+            source='lbfgs_test1.cpp', 
+            use='lbfgs')
