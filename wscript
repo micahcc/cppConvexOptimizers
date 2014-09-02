@@ -6,15 +6,6 @@ import re
 
 out = 'build'
 
-def cmakeparse(cmakefile):
-    ifile = open(cmakefile)
-    ind = ifile.read()
-    ifile.close()
-    print(ind)
-    libs = re.search('LIBRARIES "([a-zA-Z0-9_;-]*)"', ind).group(1)
-    libs = libs.split(";")
-    return libs
-
 def configure(conf):
     join = os.path.join
     isabs = os.path.isabs
@@ -74,6 +65,19 @@ def options(ctx):
     gr.add_option('--release', action='store_true', default = False, help = 'Build with tuned compiler optimizations')
     gr.add_option('--native', action='store_true', default = False, help = 'Build with highly specific compiler optimizations')
     
+def build(bld):
+    with open("lib/version.h", "w") as f:
+        f.write('#define __version__ "%s"\n\n' % gitversion())
+        f.close()
+
+    # set up callback for summary
+    from waflib.Tools import waf_unit_test
+    bld.add_post_fun(waf_unit_test.summary)
+
+    # recurse into other wscript files
+    bld.recurse('lib testing')
+
+# Helper Function
 def gitversion():
     if not os.path.isdir(".git"):
         print("This does not appear to be a Git repository.")
@@ -97,14 +101,3 @@ def gitversion():
         return "unknown"
     return mastertxt
 
-def build(bld):
-    with open("lib/version.h", "w") as f:
-        f.write('#define __version__ "%s"\n\n' % gitversion())
-        f.close()
-
-    # set up callback for summary
-    from waflib.Tools import waf_unit_test
-    bld.add_post_fun(waf_unit_test.summary)
-
-    # recurse into other wscript files
-    bld.recurse('lib testing')

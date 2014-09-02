@@ -20,6 +20,18 @@
 
 #include "lbfgs.h"
 
+#define DEBUG
+
+#ifdef DEBUG
+#include <iterator>
+#include <iostream>
+#include <iomanip>
+using std::cerr;
+using std::endl;
+using std::setw;
+using std::setprecision;
+#endif //DEBUG
+
 namespace npl {
 
 /**
@@ -35,7 +47,8 @@ namespace npl {
  */
 LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, 
         const GradFunc& gradfunc, const CallBackFunc& callback) 
-        : Optimizer(dim, valfunc, gradfunc, callback), m_lsearch(valfunc)
+        : Optimizer(dim, valfunc, gradfunc, callback), 
+        m_lsearch(valfunc, gradfunc)
 {
     m_hist.clear();
     opt_H0inv = Vector::Ones(dim);
@@ -59,13 +72,51 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc,
 LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
         const ValGradFunc& gradAndValFunc, const CallBackFunc& callback) 
         : Optimizer(dim, valfunc, gradfunc, gradAndValFunc, callback),
-        m_lsearch(valfunc)
+        m_lsearch(valfunc, gradfunc)
 {
     m_hist.clear();
     opt_H0inv = Vector::Ones(dim);
     opt_histsize = 6;
 };
 
+/**
+ * @brief Function for computing the hessian recursively
+ * Based on the algorithm from Numerical Optimization (Nocedal)
+ *
+ * @param gamma Scale of initial (H0)
+ * @param g Direction from right multiplication so far
+ * @param it Position in history list
+ *
+ * @return Direction (d) after right multiplying d by H_k, the hessian
+ * estimate for position it, 
+ */
+Vector LBFGSOpt::hessFuncTwoLoop(double gamma, const Vector& g)
+{
+    Vector q = g;
+    Vector alpha(m_hist.size());
+
+    // iterate backward in time (forward in list)
+    int ii = 0;
+    for(auto it = m_hist.cbegin(); it != m_hist.cend(); ++it, ++ii) {
+        double rho = std::get<0>(*it);
+        const Vector& y = std::get<1>(*it); // or q 
+        const Vector& s = std::get<2>(*it); // or p
+        alpha[ii] = rho*s.dot(q);
+        q -= alpha[ii]*y;
+    }
+    Vector r = opt_H0inv.cwiseProduct(q)*gamma;
+    // oldest first
+    ii = m_hist.size()-1;
+    for(auto it = m_hist.crbegin(); it != m_hist.crend(); ++it, --ii) {
+        double rho = std::get<0>(*it);
+        const Vector& y = std::get<1>(*it); // or q 
+        const Vector& s = std::get<2>(*it); // or p
+        double beta = rho*y.dot(r);
+        r += s*(alpha[ii]-beta);
+    }
+
+    return r;
+}
 
 /**
  * @brief Function for computing the hessian recursively
@@ -77,29 +128,6 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
  * @return Direction (d) after right multiplying d by H_k, the hessian
  * estimate for position it, 
  */
-Vector LBFGSOpt::hessFunc(double gamma, const Vector& d, 
-        std::list<std::tuple<double,Vector,Vector>>::const_iterator it)
-{
-
-    auto it2 = it;
-    it2++;
-    if(it2 == m_hist.cend()) {
-        return d.cwiseProduct(opt_H0inv)*gamma;
-    } else {
-        double rho = std::get<0>(*it);
-        const Vector& q = std::get<1>(*it); //y
-        const Vector& p = std::get<2>(*it); //s 
-
-        // multiply by V_k (right)
-        Vector tmp = d - rho*q*p.dot(d);
-        // multiply by hessian function H_k
-        tmp = hessFunc(gamma, tmp, it2);
-
-        // multiply by V_k^T (left) then add the result to rho*p*p^T*d
-        return tmp - p*rho*q.dot(tmp) + rho*p*p.dot(d);
-    }
-}
-
 /**
  * @brief Optimize Based on a value function and gradient function
  * separately. When both gradient and value are needed it will call update,
@@ -139,8 +167,9 @@ StopReason LBFGSOpt::optimize()
         double alpha = m_lsearch.search(f_xk, state_x, gk, dk);
         pk = alpha*dk;
         
-        if(alpha == 0 || pk.squaredNorm() < stepstop)
+        if(alpha == 0 || pk.squaredNorm() < stepstop) {
             return ENDSTEP;
+        }
 
         // step
         state_x += pk;
@@ -151,11 +180,13 @@ StopReason LBFGSOpt::optimize()
         m_compFG(state_x, f_xk, gk);
         qk += gk;
 
-        if(gk.squaredNorm() < gradstop)
+        if(gk.squaredNorm() < gradstop) {
             return ENDGRAD;
+        }
         
-        if(abs(f_xk - f_xkm1) < valstop)
+        if(abs(f_xk - f_xkm1) < valstop) {
             return ENDVALUE;
+        }
 
 
         // update history
@@ -169,51 +200,11 @@ StopReason LBFGSOpt::optimize()
          * pk - change in x (sk in original paper)
          */
         gamma = qk.dot(pk)/qk.squaredNorm();
-        dk = hessFunc(gamma, gk, m_hist.cbegin());
-        m_callback(state_x, f_xk, gk, iter);
+        dk = -hessFuncTwoLoop(gamma, gk);
+        m_callback(dk, f_xk, gk, iter);
     }
                    
     return ENDFAIL;
 }
-
-LBFGSOpt::Armijo::Armijo(const ValFunc& valFunc) 
-{
-    opt_s = 1;
-    opt_beta = .5; // slowish
-    opt_sigma = 1e-5;
-    opt_maxIt = 20;
-
-    compVal = valFunc;
-}
-    
-double LBFGSOpt::Armijo::search(double init_val, const Vector& init_x, const
-        Vector& init_g, const Vector& direction)
-{
-#ifdef DEBUG
-        fprintf(stderr, "Linesearch\n");
-#endif 
-    Vector x = init_x;
-    double gradDotDir = init_g.dot(direction); 
-    double alpha = 0;
-    double v = 0;
-
-    if(opt_s <= 0)
-        throw std::invalid_argument("opt_s must be > 0");
-
-    for(size_t m = 0; m < opt_maxIt; m++) {
-        alpha = pow(opt_beta, m)*opt_s;
-        x = init_x + alpha*direction;
-        compVal(x, v);
-
-#ifdef DEBUG
-        fprintf(stderr, "Alpha: %f, Init Val: %f, Val: %f, Sigma: %f, gd: %f",
-                alpha, init_val, v, opt_sigma, gradDotDir);
-#endif 
-        if(init_val - v >= -opt_sigma*alpha*gradDotDir)
-            return alpha;
-    }
-
-    return 0;
-};
 
 }

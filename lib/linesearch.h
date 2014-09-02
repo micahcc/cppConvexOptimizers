@@ -26,14 +26,117 @@
 namespace npl 
 {
 
-template <typename T>
-inline 
-void debug(T v)
+/**
+ * @brief Implementation of Armijo approximate line search algorithm
+ */
+class Armijo
 {
-#ifdef DEBUG
-    cerr << v;
-#endif //DEBUG
-}
+public:
+    Armijo(const ValFunc& valFunc);
+
+    /**
+     * @brief Maximum step, if this is <= 0, then a quadratic fit will be used 
+     * to estimate a guess.
+     */
+    double opt_s;
+
+    /**
+     * @brief Power function base, values closer to 0 will decrease step size
+     * faster than ones close to 1.
+     */
+    double opt_beta;
+
+    /**
+     * @brief Theshold for stopping
+     */
+    double opt_sigma;
+
+    /**
+     * @brief Maximum number of iterations
+     */
+    int opt_maxIt; 
+
+    /**
+     * @brief Performs a line search to find the alpha (step size) that
+     * satifies the armijo rule.
+     *
+     * @param init_val Initial energy/function value
+     * @param init_x Initial state 
+     * @param init_g Initial gradient
+     * @param direction Direction to search
+     *
+     * @return 
+     */
+    double search(double init_val, const Vector& init_x, const Vector& init_g,
+            const Vector& direction);
+
+private:
+    ValFunc compVal;
+};
+
+/**
+ * @brief Implementation of Armijo approximate line search algorithm
+ */
+class Wolfe 
+{
+public:
+
+    /**
+     * @brief Constructs a line search that satisfies the wolfe conditions 
+     * (Armijo and curvature condition). This requires both the gradient and
+     * value.
+     *
+     * @param valFunc
+     * @param gradFunc
+     */
+    Wolfe(const ValFunc& valFunc, const GradFunc& gradFunc);
+
+    /**
+     * @brief Maximum step, if this is <= 0, then a quadratic fit will be used 
+     * to estimate a guess.
+     */
+    double opt_s;
+
+    /**
+     * @brief Power function base, values closer to 0 will decrease step size
+     * faster than ones close to 1.
+     */
+    double opt_beta;
+
+    /**
+     * @brief Theshold for stopping based on function values
+     */
+    double opt_c1;
+
+    /**
+     * @brief Theshold for stopping based on curvature
+     */
+    double opt_c2;
+
+    /**
+     * @brief Maximum number of iterations
+     */
+    int opt_maxIt; 
+
+    /**
+     * @brief Performs a line search to find the alpha (step size) that
+     * satifies the armijo rule.
+     *
+     * @param init_val Initial energy/function value
+     * @param init_x Initial state 
+     * @param init_g Initial gradient
+     * @param direction Direction to search
+     *
+     * @return 
+     */
+    double search(double init_val, const Vector& init_x, const Vector& init_g,
+            const Vector& direction);
+
+private:
+    ValFunc compVal;
+    GradFunc compGrad;
+};
+
 
 //class StrongWolfe
 //{

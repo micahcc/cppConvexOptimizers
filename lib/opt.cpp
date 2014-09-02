@@ -157,6 +157,32 @@ int testgrad(double& error, const Vector& x, double stepsize, double tol,
     return 0;
 }
 
+
+/**
+ * @brief The number of calls to the Generalized Rosenbrock Gradient Function.
+ * This is only for benchmarking purposes, and is not thread safe.
+ */
+static size_t gRosenbrock_G_calls = 0;
+
+/**
+ * @brief The number of calls to the Generalized Rosenbrock Value Function.
+ * This is only for benchmarking purposes, and is not thread safe.
+ */
+static size_t gRosenbrock_V_calls = 0;
+
+/**
+ * @brief Returns the number of times the Value and Gradient functions for the
+ * Generalized Rosenbrock Function were called.
+ *
+ * @param vcalls Value calls
+ * @param gcalls Gradient calls
+ */
+void gRosenbrock_callCounts(size_t& vcalls, size_t& gcalls)
+{
+    gcalls = gRosenbrock_G_calls;
+    vcalls = gRosenbrock_V_calls;
+}
+
 /**
  * @brief Implements generized rosenbrock value
  *
@@ -167,6 +193,7 @@ int testgrad(double& error, const Vector& x, double stepsize, double tol,
  */
 int gRosenbrock_V(const Vector& x, double& v)
 {
+    gRosenbrock_V_calls++;;
     v = 0;
     for(size_t ii=0; ii<x.rows()-1; ii++)
         v += pow(x[ii]-1,2)+100*pow(x[ii+1]-x[ii]*x[ii], 2);
@@ -187,6 +214,7 @@ int gRosenbrock_V(const Vector& x, double& v)
  */
 int gRosenbrock_G(const Vector& x, Vector& gradient)
 {
+    gRosenbrock_G_calls++;;
 //    gradient.resize(x.rows());
     
     for(size_t ii=1; ii<x.rows()-1; ii++)

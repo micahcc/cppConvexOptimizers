@@ -73,6 +73,25 @@ int gRosenbrock_G(const Vector& x, Vector& gradient);
  */
 int gRosenbrock_V(const Vector& x, double& v);
 
+/**
+ * @brief Returns the number of times the Value and Gradient functions for the
+ * Generalized Rosenbrock Function were called.
+ *
+ * @param vcalls Value calls
+ * @param gcalls Gradient calls
+ */
+void gRosenbrock_callCounts(size_t& vcalls, size_t& gcalls);
+
+/**
+ * @brief Callback that does nothing.
+ *
+ * @param x
+ * @param value
+ * @param grad
+ * @param iter
+ *
+ * @return 
+ */
 int noopCallback(const Vector& x, double value, const Vector& grad, size_t iter)
 {
     (void)(x);

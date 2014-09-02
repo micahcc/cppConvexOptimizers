@@ -19,6 +19,16 @@
  *****************************************************************************/
 
 #include "bfgs.h"
+#define DEBUG
+
+#ifdef DEBUG
+#include <iostream>
+#include <iomanip>
+using std::cerr;
+using std::endl;
+using std::setw;
+using std::setprecision;
+#endif //DEBUG
 
 namespace npl {
 
@@ -99,6 +109,7 @@ StopReason BFGSOpt::optimize()
 
         // optain direction
         dk = -Dk*gk;
+        m_callback(dk, f_xk, gk, iter);
 
         // compute step size
         double alpha = m_lsearch.search(f_xk, state_x, gk, dk);
@@ -131,54 +142,19 @@ StopReason BFGSOpt::optimize()
         else
             vk = pk/pk.dot(qk) - Dk*qk/tauk;
 
+#ifdef DEBUG
+		cerr << "iter: " << iter << endl;
+		cerr << "pk: " << pk.transpose() << endl;
+		cerr << "qk: " << qk.transpose() << endl;
+		cerr << "vk: " << vk.transpose() << endl; 
+#endif
         Dk += pk*pk.transpose()/pk.dot(qk) - Dk*qk*qk.transpose()*Dk/
                     (qk.dot(Dk*qk)) + ZETA*tauk*vk*vk.transpose();
 
-        m_callback(state_x, f_xk, gk, iter);
     }
                    
     return ENDFAIL;
 }
-
-BFGSOpt::Armijo::Armijo(const ValFunc& valFunc) 
-{
-    opt_s = 1;
-    opt_beta = .5; // slowish
-    opt_sigma = 1e-5;
-    opt_maxIt = 20;
-
-    compVal = valFunc;
-}
-    
-double BFGSOpt::Armijo::search(double init_val, const Vector& init_x, const
-        Vector& init_g, const Vector& direction)
-{
-#ifdef DEBUG
-        fprintf(stderr, "Linesearch\n");
-#endif 
-    Vector x = init_x;
-    double gradDotDir = init_g.dot(direction); 
-    double alpha = 0;
-    double v = 0;
-
-    if(opt_s <= 0)
-        throw std::invalid_argument("opt_s must be > 0");
-
-    for(size_t m = 0; m < opt_maxIt; m++) {
-        alpha = pow(opt_beta, m)*opt_s;
-        x = init_x + alpha*direction;
-        compVal(x, v);
-
-#ifdef DEBUG
-        fprintf(stderr, "Alpha: %f, Init Val: %f, Val: %f, Sigma: %f, gd: %f",
-                alpha, init_val, v, opt_sigma, gradDotDir);
-#endif 
-        if(init_val - v >= -opt_sigma*alpha*gradDotDir)
-            return alpha;
-    }
-
-    return 0;
-};
 
 
 }

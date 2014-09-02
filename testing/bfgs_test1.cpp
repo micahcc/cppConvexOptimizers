@@ -76,6 +76,12 @@ int main()
         if(iters < 0)
             return -1;
         cerr << "Iters=" << iters << endl << endl;
+
+        size_t vcalls = 0, gcalls = 0;
+        gRosenbrock_callCounts(vcalls, gcalls);
+        cerr << "Value Calls: " << vcalls << endl;
+        cerr << "Grad  Calls: " << gcalls << endl;
+        cerr << "Total Calls: " << (vcalls+gcalls) << endl;
     }
 }
 
