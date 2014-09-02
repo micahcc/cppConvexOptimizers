@@ -39,6 +39,7 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc,
 {
     m_hist.clear();
     opt_H0inv = Vector::Ones(dim);
+    opt_histsize = 6;
 };
 
 /**
@@ -62,6 +63,7 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
 {
     m_hist.clear();
     opt_H0inv = Vector::Ones(dim);
+    opt_histsize = 6;
 };
 
 
@@ -78,19 +80,24 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
 Vector LBFGSOpt::hessFunc(double gamma, const Vector& d, 
         std::list<std::tuple<double,Vector,Vector>>::const_iterator it)
 {
-    double rho = std::get<0>(*it);
-    const Vector& q = std::get<1>(*it); //y
-    const Vector& p = std::get<2>(*it); //s 
-    Vector tmp = d - rho*q*p.dot(d);
 
     auto it2 = it;
     it2++;
-    if(it2 == m_hist.cend())
-        tmp = tmp.cwiseProduct(opt_H0inv)*gamma;
-    else
+    if(it2 == m_hist.cend()) {
+        return d.cwiseProduct(opt_H0inv)*gamma;
+    } else {
+        double rho = std::get<0>(*it);
+        const Vector& q = std::get<1>(*it); //y
+        const Vector& p = std::get<2>(*it); //s 
+
+        // multiply by V_k (right)
+        Vector tmp = d - rho*q*p.dot(d);
+        // multiply by hessian function H_k
         tmp = hessFunc(gamma, tmp, it2);
-    
-    return tmp - p*rho*q.dot(tmp) + rho*p*p.dot(d);
+
+        // multiply by V_k^T (left) then add the result to rho*p*p^T*d
+        return tmp - p*rho*q.dot(tmp) + rho*p*p.dot(d);
+    }
 }
 
 /**
