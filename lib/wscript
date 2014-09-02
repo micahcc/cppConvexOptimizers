@@ -12,3 +12,7 @@ def build(bld):
             source = 'bfgs.cpp',
             use='opt EIGEN',
             export_includes = ['.'])
+    bld.shlib(target = 'lbfgs',
+            source = 'lbfgs.cpp',
+            use='opt EIGEN',
+            export_includes = ['.'])
