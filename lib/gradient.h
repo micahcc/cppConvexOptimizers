@@ -85,7 +85,7 @@ public:
                 const GradFunc& gradfunc, 
                 const CallBackFunc& callback = noopCallback);
 public:
-    int optimize();
+    StopReason optimize();
 };
 
 }

@@ -58,17 +58,21 @@ int generalized_rosenbrock_test(size_t n)
 
     BFGSOpt optimizer(n , gRosenbrock_V, gRosenbrock_G, callback);
     optimizer.state_x = x;
-    optimizer.stop_Its = 100;
-    optimizer.optimize();
+    optimizer.stop_Its = 10000;
+    optimizer.stop_X = 0;
+    optimizer.stop_G = 0.0000000001;
+    
+    StopReason stopr = optimizer.optimize();
+    cerr << Optimizer::explainStop(stopr) << endl;
 
     return 0;
 }
 
 int main()
 {
-    for(size_t ii=4; ii < 5; ii++) {
+    for(size_t ii=39; ii < 40; ii++) {
         cerr << "N=" << ii << endl;
-        int iters = generalized_rosenbrock_test(11);
+        int iters = generalized_rosenbrock_test(ii);
         if(iters < 0)
             return -1;
         cerr << "Iters=" << iters << endl << endl;

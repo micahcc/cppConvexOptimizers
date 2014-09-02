@@ -84,6 +84,24 @@ Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc&
     m_callback = callback;
 };
 
+std::string Optimizer::explainStop(StopReason r)
+{
+    switch(r) {
+        case ENDGRAD:
+            return "Optimizer stopped due to gradient below threshold.";
+        case ENDSTEP: 
+            return "Optimizer stopped due to step size below threshold.";
+        case ENDVALUE:
+            return "Optimizer stopped due to change in value below threshold.";
+        case ENDITERS: 
+            return "Optimizer stopped due to number iterations.";
+        case ENDFAIL:
+            return "Optimizer due to failure of callback functions.";
+    }
+    return "Unknown stop condition!";
+}
+
+
 /**
  * @brief Tests a gradient function using the value function. 
  *
@@ -185,6 +203,5 @@ int gRosenbrock_G(const Vector& x, Vector& gradient)
     
     return 0;
 }
-
 
 }

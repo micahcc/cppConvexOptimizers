@@ -103,7 +103,7 @@ public:
      */
     Armijo m_lsearch;
 
-    int optimize();
+    StopReason optimize();
 };
 
 }

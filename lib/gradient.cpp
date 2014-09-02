@@ -80,7 +80,7 @@ GradientOpt::GradientOpt(size_t dim, const ValFunc& valfunc,
  *
  * @return          StopReason
  */
-int GradientOpt::optimize()
+StopReason GradientOpt::optimize()
 {
     Vector grad(state_x.rows());
     Vector prevx(state_x.rows());
@@ -94,16 +94,16 @@ int GradientOpt::optimize()
         if(m_compFG(state_x, cur, grad) != 0)
             return ENDFAIL;
 
-        if(grad.norm() < stop_G)
+        if(grad.norm() <= stop_G)
             return ENDGRAD;
-        if(fabs(prev-cur) < stop_F)
+        if(fabs(prev-cur) <= stop_F)
             return ENDVALUE;
 
         // compute step, (in grad variable)
         grad = -grad*stepsize;
 
         double gn = grad.norm();
-        if(gn < stop_X)
+        if(gn <= stop_X)
             return ENDVALUE;
 
         if(gn > opt_maxstep)

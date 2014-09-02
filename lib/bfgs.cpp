@@ -75,11 +75,11 @@ BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
  *
  * @return          StopReason
  */
-int BFGSOpt::optimize()
+StopReason BFGSOpt::optimize()
 {
-    double gradstop = this->stop_G*this->stop_G;
-    double stepstop = this->stop_X*this->stop_X;
-    double valstop = this->stop_F;
+    double gradstop = this->stop_G >= 0 ? this->stop_G*this->stop_G : -1;
+    double stepstop = this->stop_X >= 0 ? this->stop_X*this->stop_X : -1;
+    double valstop = this->stop_F >= 0 ? this->stop_F : -1;
 
     const double ZETA = 1;
     Matrix& Dk = state_Hinv;
@@ -104,7 +104,7 @@ int BFGSOpt::optimize()
         double alpha = m_lsearch.search(f_xk, state_x, gk, dk);
         pk = alpha*dk;
         
-        if(pk.squaredNorm() < stepstop)
+        if(alpha == 0 || pk.squaredNorm() < stepstop)
             return ENDSTEP;
 
         // step
@@ -145,7 +145,7 @@ BFGSOpt::Armijo::Armijo(const ValFunc& valFunc)
     opt_s = 1;
     opt_beta = .5; // slowish
     opt_sigma = 1e-5;
-    opt_maxIt = 10;
+    opt_maxIt = 20;
 
     compVal = valFunc;
 }

@@ -162,8 +162,14 @@ public:
      * @return StopReason
      */
     virtual 
-    int optimize() { return 0; };
+    StopReason optimize() { return ENDFAIL; };
 
+    /**
+     * @brief Provides a string that describes the stop reason
+     *
+     * @param r
+     */
+    static std::string explainStop(StopReason r);
 protected:
 
     ValGradFunc m_compFG;
