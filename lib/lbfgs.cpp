@@ -48,7 +48,7 @@ namespace npl {
 LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, 
         const GradFunc& gradfunc, const CallBackFunc& callback) 
         : Optimizer(dim, valfunc, gradfunc, callback), 
-        m_lsearch(valfunc, gradfunc)
+        m_lsearch(valfunc)
 {
     m_hist.clear();
     opt_H0inv = Vector::Ones(dim);
@@ -72,7 +72,7 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc,
 LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
         const ValGradFunc& gradAndValFunc, const CallBackFunc& callback) 
         : Optimizer(dim, valfunc, gradfunc, gradAndValFunc, callback),
-        m_lsearch(valfunc, gradfunc)
+        m_lsearch(valfunc)
 {
     m_hist.clear();
     opt_H0inv = Vector::Ones(dim);

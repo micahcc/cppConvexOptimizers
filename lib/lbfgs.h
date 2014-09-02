@@ -50,8 +50,8 @@ public:
      * @brief Armijo line search class, note that it has several options that
      * may need to be set
      */
-    Wolfe m_lsearch;
-//    Armijo m_lsearch;
+//    Wolfe m_lsearch;
+    Armijo m_lsearch;
 
     /**
      * @brief Perform LBFGS optimization
