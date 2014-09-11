@@ -24,6 +24,7 @@
 #include <iostream>
 
 using namespace std;
+using Eigen::VectorXd;
 
 namespace npl {
 
@@ -39,17 +40,17 @@ Wolfe::Wolfe(const ValFunc& valFunc, const GradFunc& gradFunc)
     compGrad = gradFunc;
 }
     
-double Wolfe::search(double init_val, const Vector& init_x, const
-        Vector& init_g, const Vector& direction)
+double Wolfe::search(double init_val, const VectorXd& init_x, const
+        VectorXd& init_g, const VectorXd& direction)
 {
 //#ifdef DEBUG
 //        fprintf(stderr, "Linesearch\n");
 //#endif 
-    Vector x = init_x;
+    VectorXd x = init_x;
     double gradDotDir = init_g.dot(direction); 
     double alpha = 0;
     double v = 0;
-    Vector g(x.rows());
+    VectorXd g(x.rows());
 
     if(opt_s <= 0)
         throw std::invalid_argument("opt_s must be > 0");
@@ -83,13 +84,13 @@ Armijo::Armijo(const ValFunc& valFunc)
     compVal = valFunc;
 }
     
-double Armijo::search(double init_val, const Vector& init_x, const
-        Vector& init_g, const Vector& direction)
+double Armijo::search(double init_val, const VectorXd& init_x, const
+        VectorXd& init_g, const VectorXd& direction)
 {
 //#ifdef DEBUG
 //        fprintf(stderr, "Linesearch\n");
 //#endif 
-    Vector x = init_x;
+    VectorXd x = init_x;
     double gradDotDir = init_g.dot(direction); 
     double alpha = 0;
     double v = 0;

@@ -76,7 +76,7 @@ Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc&
 
     m_compF = valfunc;
     m_compG = gradfunc;
-    m_compFG = [&](const Vector& x, double& value, Vector& grad) -> int
+    m_compFG = [&](const VectorXd& x, double& value, VectorXd& grad) -> int
     {
         return !(valfunc(x, value)==0 && gradfunc(x, grad)==0);
     };
@@ -116,7 +116,7 @@ std::string Optimizer::explainStop(StopReason r)
  *
  * @return 
  */
-int testgrad(double& error, const Vector& x, double stepsize, double tol, 
+int testgrad(double& error, const VectorXd& x, double stepsize, double tol, 
         const ValFunc& valfunc, const GradFunc& gradfunc)
 {
 //#ifndef NDEBUG
@@ -125,7 +125,7 @@ int testgrad(double& error, const Vector& x, double stepsize, double tol,
     std::cerr << std::setw(wid) << "Dim" << std::setw(wid) << "Analytic" <<
         std::setw(wid) << "Numeric" << std::endl;
 //#endif //NDEBUG
-    Vector g(x.rows());
+    VectorXd g(x.rows());
     if(gradfunc(x, g) != 0) 
         return -1;
 
@@ -134,8 +134,8 @@ int testgrad(double& error, const Vector& x, double stepsize, double tol,
     if(valfunc(x, center) != 0)
         return -1;
 
-    Vector step = Vector::Zero(x.rows());
-    Vector gbrute(x.rows());
+    VectorXd step = VectorXd::Zero(x.rows());
+    VectorXd gbrute(x.rows());
     for(size_t dd=0; dd<x.rows(); dd++) {
         step[dd] = stepsize;
         if(valfunc(x+step, v) != 0)
@@ -191,7 +191,7 @@ void gRosenbrock_callCounts(size_t& vcalls, size_t& gcalls)
  *
  * @return 
  */
-int gRosenbrock_V(const Vector& x, double& v)
+int gRosenbrock_V(const VectorXd& x, double& v)
 {
     gRosenbrock_V_calls++;;
     v = 0;
@@ -212,7 +212,7 @@ int gRosenbrock_V(const Vector& x, double& v)
  *
  * @return 
  */
-int gRosenbrock_G(const Vector& x, Vector& gradient)
+int gRosenbrock_G(const VectorXd& x, VectorXd& gradient)
 {
     gRosenbrock_G_calls++;;
 //    gradient.resize(x.rows());

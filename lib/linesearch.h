@@ -67,8 +67,8 @@ public:
      *
      * @return 
      */
-    double search(double init_val, const Vector& init_x, const Vector& init_g,
-            const Vector& direction);
+    double search(double init_val, const VectorXd& init_x, const VectorXd& init_g,
+            const VectorXd& direction);
 
 private:
     ValFunc compVal;
@@ -129,8 +129,8 @@ public:
      *
      * @return 
      */
-    double search(double init_val, const Vector& init_x, const Vector& init_g,
-            const Vector& direction);
+    double search(double init_val, const VectorXd& init_x, const VectorXd& init_g,
+            const VectorXd& direction);
 
 private:
     ValFunc compVal;
@@ -169,7 +169,7 @@ private:
 //     */
 //    int opt_maxIt; 
 //
-//    double search(double v_init, const Vector& x_init, const Vector& dir)
+//    double search(double v_init, const VectorXd& x_init, const VectorXd& dir)
 //    {
 //        if(opt_alpha_step <= 0)
 //            throw std::invalid_argument("opt_alpha_step must be > 0");
@@ -182,7 +182,7 @@ private:
 //        double alpha = ALPHA_START;
 //        double alpha_max = ALPHA_MAX;
 //
-//        Vector g; // gradient
+//        VectorXd g; // gradient
 //
 //        double v_prev;
 //        double v = v_init; // value

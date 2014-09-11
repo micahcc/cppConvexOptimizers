@@ -82,8 +82,8 @@ GradientOpt::GradientOpt(size_t dim, const ValFunc& valfunc,
  */
 StopReason GradientOpt::optimize()
 {
-    Vector grad(state_x.rows());
-    Vector prevx(state_x.rows());
+    VectorXd grad(state_x.rows());
+    VectorXd prevx(state_x.rows());
 
     double cur = 0;
     double prev = 0;

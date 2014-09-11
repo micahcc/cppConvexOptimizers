@@ -81,7 +81,7 @@ public:
     /**
      * @brief Default (initial) value for inverse hessian matrix
      */
-    Vector opt_H0inv;
+    VectorXd opt_H0inv;
 
 private:
     /**
@@ -89,7 +89,7 @@ private:
      * 
      * Elements are rho_k,qk,pk
      */
-    std::list<std::tuple<double,Vector,Vector>> m_hist;
+    std::list<std::tuple<double,VectorXd,VectorXd>> m_hist;
 
     /**
      * @brief Function for computing the hessian recursively
@@ -101,10 +101,10 @@ private:
      * @return Direction (d) after right multiplying d by H_k, the hessian
      * estimate for position it, 
      */
-    Vector hessFunc(double gamma, const Vector& d, 
-        std::list<std::tuple<double,Vector,Vector>>::const_iterator it);
+    VectorXd hessFunc(double gamma, const VectorXd& d, 
+        std::list<std::tuple<double,VectorXd,VectorXd>>::const_iterator it);
 
-    Vector hessFuncTwoLoop(double gamma, const Vector& g);
+    VectorXd hessFuncTwoLoop(double gamma, const VectorXd& g);
 };
 
 }

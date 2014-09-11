@@ -51,7 +51,7 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc,
         m_lsearch(valfunc)
 {
     m_hist.clear();
-    opt_H0inv = Vector::Ones(dim);
+    opt_H0inv = VectorXd::Ones(dim);
     opt_histsize = 6;
 };
 
@@ -75,7 +75,7 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
         m_lsearch(valfunc)
 {
     m_hist.clear();
-    opt_H0inv = Vector::Ones(dim);
+    opt_H0inv = VectorXd::Ones(dim);
     opt_histsize = 6;
 };
 
@@ -90,27 +90,27 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
  * @return Direction (d) after right multiplying d by H_k, the hessian
  * estimate for position it, 
  */
-Vector LBFGSOpt::hessFuncTwoLoop(double gamma, const Vector& g)
+VectorXd LBFGSOpt::hessFuncTwoLoop(double gamma, const VectorXd& g)
 {
-    Vector q = g;
-    Vector alpha(m_hist.size());
+    VectorXd q = g;
+    VectorXd alpha(m_hist.size());
 
     // iterate backward in time (forward in list)
     int ii = 0;
     for(auto it = m_hist.cbegin(); it != m_hist.cend(); ++it, ++ii) {
         double rho = std::get<0>(*it);
-        const Vector& y = std::get<1>(*it); // or q 
-        const Vector& s = std::get<2>(*it); // or p
+        const VectorXd& y = std::get<1>(*it); // or q 
+        const VectorXd& s = std::get<2>(*it); // or p
         alpha[ii] = rho*s.dot(q);
         q -= alpha[ii]*y;
     }
-    Vector r = opt_H0inv.cwiseProduct(q)*gamma;
+    VectorXd r = opt_H0inv.cwiseProduct(q)*gamma;
     // oldest first
     ii = m_hist.size()-1;
     for(auto it = m_hist.crbegin(); it != m_hist.crend(); ++it, --ii) {
         double rho = std::get<0>(*it);
-        const Vector& y = std::get<1>(*it); // or q 
-        const Vector& s = std::get<2>(*it); // or p
+        const VectorXd& y = std::get<1>(*it); // or q 
+        const VectorXd& s = std::get<2>(*it); // or p
         double beta = rho*y.dot(r);
         r += s*(alpha[ii]-beta);
     }
@@ -149,12 +149,12 @@ StopReason LBFGSOpt::optimize()
     double stepstop = this->stop_X >= 0 ? this->stop_X*this->stop_X : -1;
     double valstop = this->stop_F >= 0 ? this->stop_F : -1;
 
-    Vector gk(state_x.rows()); // gradient
+    VectorXd gk(state_x.rows()); // gradient
     double f_xk; // value at current position
     double f_xkm1; // value at previous position
 
-    Vector pk, qk, dk, vk;
-    Vector H0 = Vector::Ones(state_x.rows());
+    VectorXd pk, qk, dk, vk;
+    VectorXd H0 = VectorXd::Ones(state_x.rows());
     double gamma = 1;
 
     //D(k+1) += p(k)p(k)'   - D(k)q(k)q(k)'D(k) + Z(k)T(k)v(k)v(k)'

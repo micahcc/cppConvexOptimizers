@@ -47,7 +47,7 @@ BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc,
         const GradFunc& gradfunc, const CallBackFunc& callback) 
         : Optimizer(dim, valfunc, gradfunc, callback), m_lsearch(valfunc)
 {
-    state_Hinv = Matrix::Identity(dim, dim);
+    state_Hinv = MatrixXd::Identity(dim, dim);
 };
 
 /**
@@ -69,7 +69,7 @@ BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
         : Optimizer(dim, valfunc, gradfunc, gradAndValFunc, callback),
         m_lsearch(valfunc)
 {
-    state_Hinv = Matrix::Identity(dim, dim);
+    state_Hinv = MatrixXd::Identity(dim, dim);
 };
 
 
@@ -92,14 +92,14 @@ StopReason BFGSOpt::optimize()
     double valstop = this->stop_F >= 0 ? this->stop_F : -1;
 
     const double ZETA = 1;
-    Matrix& Dk = state_Hinv;
-    Vector gk(state_x.rows()); // gradient
+    MatrixXd& Dk = state_Hinv;
+    VectorXd gk(state_x.rows()); // gradient
     double f_xk; // value at current position
     double f_xkm1; // value at previous position
 
-    Vector xkprev; 
+    VectorXd xkprev; 
     double tauk = 0;
-    Vector pk, qk, dk, vk;
+    VectorXd pk, qk, dk, vk;
 
     //D(k+1) += p(k)p(k)'   - D(k)q(k)q(k)'D(k) + Z(k)T(k)v(k)v(k)'
     //          ----------    ----------------- 

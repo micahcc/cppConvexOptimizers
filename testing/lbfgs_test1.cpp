@@ -27,7 +27,7 @@ using namespace npl;
 
 bool DEBUG = true;
 
-int callback(const Vector& x, double v, const Vector& g, size_t iter)
+int callback(const VectorXd& x, double v, const VectorXd& g, size_t iter)
 {
     cout << "Iter: " << iter << " (" << v << ")\n";
 
@@ -48,7 +48,7 @@ int generalized_rosenbrock_test(size_t n)
 {
     const double tol = 0.0001;
     double error = 0;
-    Vector x = Vector::Random(n);
+    VectorXd x = VectorXd::Random(n);
     x.normalize();
     
     if(testgrad(error, x, 0.00000001, tol, gRosenbrock_V, gRosenbrock_G) != 0) {

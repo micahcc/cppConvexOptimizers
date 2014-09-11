@@ -28,13 +28,13 @@ namespace npl
 {
 
 using std::function;
-typedef Eigen::MatrixXd Matrix;
-typedef Eigen::VectorXd Vector;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
-typedef function<int(const Vector& x, double& v, Vector& g)> ValGradFunc;
-typedef function<int(const Vector& x, Vector& g)> GradFunc;
-typedef function<int(const Vector& x, double& v)> ValFunc;
-typedef function<int(const Vector& x, double v, const Vector& g, size_t iter)> CallBackFunc;
+typedef function<int(const VectorXd& x, double& v, VectorXd& g)> ValGradFunc;
+typedef function<int(const VectorXd& x, VectorXd& g)> GradFunc;
+typedef function<int(const VectorXd& x, double& v)> ValFunc;
+typedef function<int(const VectorXd& x, double v, const VectorXd& g, size_t iter)> CallBackFunc;
 
 /**
  * @brief Tests a gradient function using the value function. 
@@ -50,7 +50,7 @@ typedef function<int(const Vector& x, double v, const Vector& g, size_t iter)> C
  *
  * @return 
  */
-int testgrad(double& error, const Vector& x, double stepsize, double tol, 
+int testgrad(double& error, const VectorXd& x, double stepsize, double tol, 
         const ValFunc& valfunc, const GradFunc& gradfunc);
 
 /**
@@ -61,7 +61,7 @@ int testgrad(double& error, const Vector& x, double stepsize, double tol,
  *
  * @return 
  */
-int gRosenbrock_G(const Vector& x, Vector& gradient);
+int gRosenbrock_G(const VectorXd& x, VectorXd& gradient);
 
    /**
  * @brief Implements generized rosenbrock value
@@ -71,7 +71,7 @@ int gRosenbrock_G(const Vector& x, Vector& gradient);
  *
  * @return 
  */
-int gRosenbrock_V(const Vector& x, double& v);
+int gRosenbrock_V(const VectorXd& x, double& v);
 
 /**
  * @brief Returns the number of times the Value and Gradient functions for the
@@ -92,7 +92,7 @@ void gRosenbrock_callCounts(size_t& vcalls, size_t& gcalls);
  *
  * @return 
  */
-int noopCallback(const Vector& x, double value, const Vector& grad, size_t iter)
+int noopCallback(const VectorXd& x, double value, const VectorXd& grad, size_t iter)
 {
     (void)(x);
     (void)(value);
@@ -121,7 +121,7 @@ public:
     /**
      * @brief State variable, set to initialize
      */
-    Vector state_x;
+    VectorXd state_x;
     
     /**
      * @brief Stop when graient magnitde falls below this value

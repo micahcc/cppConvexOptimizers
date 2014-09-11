@@ -36,7 +36,7 @@ private:
     /**
      * @brief Stores the approximate value of the inverse hessian
      */
-    Matrix state_Hinv;
+    MatrixXd state_Hinv;
 
 public:
     
