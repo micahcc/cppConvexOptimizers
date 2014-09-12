@@ -120,7 +120,7 @@ int testgrad(double& error, const VectorXd& x, double stepsize, double tol,
         const ValFunc& valfunc, const GradFunc& gradfunc)
 {
 //#ifndef NDEBUG
-    size_t wid = 10;
+    size_t wid = 18;
     std::cerr << "Testing Gradient" << std::endl;
     std::cerr << std::setw(wid) << "Dim" << std::setw(wid) << "Analytic" <<
         std::setw(wid) << "Numeric" << std::endl;
