@@ -119,12 +119,10 @@ std::string Optimizer::explainStop(StopReason r)
 int testgrad(double& error, const VectorXd& x, double stepsize, double tol, 
         const ValFunc& valfunc, const GradFunc& gradfunc)
 {
-//#ifndef NDEBUG
     size_t wid = 18;
     std::cerr << "Testing Gradient" << std::endl;
     std::cerr << std::setw(wid) << "Dim" << std::setw(wid) << "Analytic" <<
         std::setw(wid) << "Numeric" << std::endl;
-//#endif //NDEBUG
     VectorXd g(x.rows());
     if(gradfunc(x, g) != 0) 
         return -1;
@@ -144,13 +142,12 @@ int testgrad(double& error, const VectorXd& x, double stepsize, double tol,
 
         gbrute[dd] = (v-center)/stepsize;
 
-//#ifndef NDEBUG
-    std::cerr << std::setw(wid) << dd << std::setw(wid) << g[dd] <<
-        std::setw(wid) << gbrute[dd] << std::endl;
-//#endif //NDEBUG
+        std::cerr << std::setw(wid) << dd << std::setw(wid) << g[dd] <<
+            std::setw(wid) << gbrute[dd] << std::endl;
     }
 
     error = (gbrute - g).norm();
+    std::cerr << "SumSqr Error: " << error << std::endl;
     if(error > tol)
         return -2;
 
