@@ -42,7 +42,7 @@ Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfun
         const ValGradFunc& valgradfunc, const CallBackFunc& callback) 
         : state_x(dim)
 {
-    stop_G = 0.00001;
+    stop_G = 0;
     stop_X = 0;
     stop_F = 0;
     stop_Its = -1;

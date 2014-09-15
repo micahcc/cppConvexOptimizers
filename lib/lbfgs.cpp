@@ -20,8 +20,6 @@
 
 #include "lbfgs.h"
 
-#define DEBUG
-
 #ifdef DEBUG
 #include <iterator>
 #include <iostream>
