@@ -27,13 +27,32 @@
 namespace npl
 {
 
+/** \addtogroup Optimizers Optimization Algorithms
+ * @{
+ */
+
 using std::function;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+/**
+ * @brief Value and Gradient Computation Function
+ */
 typedef function<int(const VectorXd& x, double& v, VectorXd& g)> ValGradFunc;
+
+/**
+ * @brief Gradient Only Computation Function
+ */
 typedef function<int(const VectorXd& x, VectorXd& g)> GradFunc;
+
+/**
+ * @brief Value Only Computation Function
+ */
 typedef function<int(const VectorXd& x, double& v)> ValFunc;
+
+/**
+ * @brief Callback function
+ */
 typedef function<int(const VectorXd& x, double v, const VectorXd& g, size_t iter)> CallBackFunc;
 
 /**
@@ -196,6 +215,8 @@ protected:
     ValFunc m_compF;
     CallBackFunc m_callback;
 };
+
+/**  @} */
 
 } // npl
 

@@ -32,6 +32,16 @@
 
 namespace npl {  
 
+/** \addtogroup Optimizers Optimization Algorithms
+ * @{
+ */
+
+/**
+ * @brief Limited-Memory Broyden–Fletcher–Goldfarb–Shanno Algorithm based on "A
+ * Limited Memory Algorithm for Bound Constrained Optimization"
+ * Richard H. Byrd, Peihuang Lu, Jorge Nocedal, and Ciyou Zhu
+ * http://dx.doi.org/10.1137/0916069
+ */
 class LBFGSOpt : virtual public Optimizer
 {
 public:
@@ -107,6 +117,7 @@ private:
     VectorXd hessFuncTwoLoop(double gamma, const VectorXd& g);
 };
 
+/** @} */
 }
 
 #endif // LBFGS_H

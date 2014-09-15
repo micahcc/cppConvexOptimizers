@@ -27,6 +27,10 @@ namespace npl
 {
 
 /**
+ * /addtogroup Optimizers
+ */
+
+/**
  * @brief Implementation of Armijo approximate line search algorithm
  */
 class Armijo
@@ -234,6 +238,9 @@ private:
 //    ComputeValFunc compVal;
 //};
 
+/**
+ * @}
+ */
 }
 
 #endif 

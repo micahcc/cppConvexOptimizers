@@ -25,8 +25,6 @@
 using namespace std;
 using namespace npl;
 
-bool DEBUG = true;
-
 int callback(const VectorXd& x, double v, const VectorXd& g, size_t iter)
 {
     cout << "Iter: " << iter << " (" << v << ")\n";

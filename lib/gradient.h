@@ -29,6 +29,10 @@
 
 namespace npl {  
 
+/** \addtogroup Optimizers
+ * @{
+ */
+
 class GradientOpt : virtual public Optimizer
 {
 public:
@@ -87,6 +91,8 @@ public:
 public:
     StopReason optimize();
 };
+
+/** @} */
 
 }
 

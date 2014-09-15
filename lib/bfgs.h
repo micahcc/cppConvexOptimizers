@@ -30,6 +30,10 @@
 
 namespace npl {  
 
+/** \addtogroup Optimizers Optimization Algorithms
+ * @{
+ */
+
 class BFGSOpt : virtual public Optimizer
 {
 private:
@@ -57,6 +61,8 @@ public:
 
     StopReason optimize();
 };
+
+/** @} */
 
 }
 
