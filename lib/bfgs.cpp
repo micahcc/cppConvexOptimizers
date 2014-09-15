@@ -87,9 +87,12 @@ BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
  */
 StopReason BFGSOpt::optimize()
 {
-    double gradstop = this->stop_G >= 0 ? this->stop_G*this->stop_G : -1;
-    double stepstop = this->stop_X >= 0 ? this->stop_X*this->stop_X : -1;
-    double valstop = this->stop_F >= 0 ? this->stop_F : -1;
+    double gradstop = this->stop_G >= 0 ? this->stop_G*this->stop_G : 0;
+    double stepstop = this->stop_X >= 0 ? this->stop_X*this->stop_X : 0;
+    double valstop = this->stop_F >= 0 ? this->stop_F : 0;
+
+    // update linesearch with minimum step
+    m_lsearch.opt_minstep = stepstop;
 
     const double ZETA = 1;
     MatrixXd& Dk = state_Hinv;

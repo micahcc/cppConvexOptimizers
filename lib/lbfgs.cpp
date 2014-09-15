@@ -145,9 +145,12 @@ VectorXd LBFGSOpt::hessFuncTwoLoop(double gamma, const VectorXd& g)
  */
 StopReason LBFGSOpt::optimize()
 {
-    double gradstop = this->stop_G >= 0 ? this->stop_G*this->stop_G : -1;
-    double stepstop = this->stop_X >= 0 ? this->stop_X*this->stop_X : -1;
+    double gradstop = this->stop_G >= 0 ? this->stop_G*this->stop_G : 0;
+    double stepstop = this->stop_X >= 0 ? this->stop_X*this->stop_X : 0;
     double valstop = this->stop_F >= 0 ? this->stop_F : -1;
+
+    // update linesearch with minimum step
+    m_lsearch.opt_minstep = stepstop;
 
     VectorXd gk(state_x.rows()); // gradient
     double f_xk; // value at current position

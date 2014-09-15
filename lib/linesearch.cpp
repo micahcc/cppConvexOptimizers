@@ -55,7 +55,8 @@ double Wolfe::search(double init_val, const VectorXd& init_x, const
     if(opt_s <= 0)
         throw std::invalid_argument("opt_s must be > 0");
 
-    for(size_t m = 0; m < opt_maxIt; m++) {
+    alpha = INFINITY;
+    for(size_t m = 0; m < opt_maxIt && alpha > opt_minstep; m++) {
         alpha = pow(opt_beta, m)*opt_s;
         x = init_x + alpha*direction;
         compVal(x, v);
@@ -98,7 +99,8 @@ double Armijo::search(double init_val, const VectorXd& init_x, const
     if(opt_s <= 0)
         throw std::invalid_argument("opt_s must be > 0");
 
-    for(size_t m = 0; m < opt_maxIt; m++) {
+    alpha = INFINITY;
+    for(size_t m = 0; m < opt_maxIt && alpha > opt_minstep; m++) {
         alpha = pow(opt_beta, m)*opt_s;
         x = init_x + alpha*direction;
         compVal(x, v);

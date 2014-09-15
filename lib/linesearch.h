@@ -43,6 +43,11 @@ public:
      * to estimate a guess.
      */
     double opt_s;
+    
+    /**
+     * @brief Minimum non-zero step, once alpha drops below this, returns 0
+     */
+    double opt_minstep;
 
     /**
      * @brief Power function base, values closer to 0 will decrease step size
@@ -94,6 +99,11 @@ public:
      * @param gradFunc
      */
     Wolfe(const ValFunc& valFunc, const GradFunc& gradFunc);
+
+    /**
+     * @brief Minimum non-zero step, once alpha drops below this, returns 0
+     */
+    double opt_minstep;
 
     /**
      * @brief Maximum step, if this is <= 0, then a quadratic fit will be used 
