@@ -19,7 +19,6 @@
  *****************************************************************************/
 
 #include "bfgs.h"
-#define DEBUG
 
 #ifdef DEBUG
 #include <iostream>
