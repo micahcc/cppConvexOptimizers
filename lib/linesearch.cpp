@@ -35,6 +35,8 @@ Wolfe::Wolfe(const ValFunc& valFunc, const GradFunc& gradFunc)
     opt_c1 = 1e-5;
     opt_c2 = 0.9;
     opt_maxIt = 20;
+    opt_lowerbound = -INFINITY;
+    opt_upperbound = INFINITY;
 
     compVal = valFunc;
     compGrad = gradFunc;
@@ -61,10 +63,11 @@ double Wolfe::search(double init_val, const VectorXd& init_x, const
         x = init_x + alpha*direction;
         compVal(x, v);
 
-//#ifdef DEBUG
-//        fprintf(stderr, "Alpha: %f, Init Val: %f, Val: %f, Sigma: %f, gd: %f",
-//                alpha, init_val, v, opt_sigma, gradDotDir);
-//#endif 
+        if(v < opt_lowerbound)
+            return alpha;
+        if(v > opt_upperbound)
+            return alpha;
+        
         if(init_val - v >= -opt_c1*alpha*gradDotDir) {
             compGrad(x, g);
             if(g.dot(direction) >= opt_c2*gradDotDir)
@@ -81,6 +84,8 @@ Armijo::Armijo(const ValFunc& valFunc)
     opt_beta = .5; // slowish
     opt_sigma = 1e-5;
     opt_maxIt = 20;
+    opt_lowerbound = -INFINITY;
+    opt_upperbound = INFINITY;
 
     compVal = valFunc;
 }
@@ -105,10 +110,11 @@ double Armijo::search(double init_val, const VectorXd& init_x, const
         x = init_x + alpha*direction;
         compVal(x, v);
 
-//#ifdef DEBUG
-//        fprintf(stderr, "Alpha: %f, Init Val: %f, Val: %f, Sigma: %f, gd: %f",
-//                alpha, init_val, v, opt_sigma, gradDotDir);
-//#endif 
+        if(v < opt_lowerbound)
+            return alpha;
+        if(v > opt_upperbound)
+            return alpha;
+
         if(init_val - v >= -opt_sigma*alpha*gradDotDir)
             return alpha;
     }

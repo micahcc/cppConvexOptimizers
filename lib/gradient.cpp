@@ -98,6 +98,8 @@ StopReason GradientOpt::optimize()
             return ENDGRAD;
         if(fabs(prev-cur) <= stop_F)
             return ENDVALUE;
+        if(cur < stop_F_under || cur > stop_F_over)
+            return ENDABSVALUE;
 
         // compute step, (in grad variable)
         grad = -grad*stepsize;

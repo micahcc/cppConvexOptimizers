@@ -149,6 +149,8 @@ StopReason LBFGSOpt::optimize()
 
     // update linesearch with minimum step
     m_lsearch.opt_minstep = stepstop;
+	m_lsearch.opt_lowerbound = this->stop_F_under;
+	m_lsearch.opt_upperbound = this->stop_F_over;
 
     VectorXd gk(state_x.rows()); // gradient
     double f_xk; // value at current position
@@ -181,14 +183,14 @@ StopReason LBFGSOpt::optimize()
         m_compFG(state_x, f_xk, gk);
         qk += gk;
 
-        if(gk.squaredNorm() < gradstop) {
+        if(gk.squaredNorm() < gradstop) 
             return ENDGRAD;
-        }
         
-        if(abs(f_xk - f_xkm1) < valstop) {
+        if(abs(f_xk - f_xkm1) < valstop) 
             return ENDVALUE;
-        }
 
+        if(f_xk < this->stop_F_under || f_xk > this->stop_F_over)
+            return ENDABSVALUE;
 
         // update history
         m_hist.push_front(std::make_tuple(1./qk.dot(pk), qk, pk));

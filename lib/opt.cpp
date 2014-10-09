@@ -45,6 +45,8 @@ Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfun
     stop_G = 0;
     stop_X = 0;
     stop_F = 0;
+    stop_F_under = -INFINITY;
+    stop_F_over = INFINITY;
     stop_Its = -1;
 
     m_compF = valfunc;
@@ -72,6 +74,8 @@ Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc&
     stop_G = 0.00001;
     stop_X = 0;
     stop_F = 0;
+    stop_F_under = -INFINITY;
+    stop_F_over = INFINITY;
     stop_Its = -1;
 
     m_compF = valfunc;
@@ -93,6 +97,8 @@ std::string Optimizer::explainStop(StopReason r)
             return "Optimizer stopped due to step size below threshold.";
         case ENDVALUE:
             return "Optimizer stopped due to change in value below threshold.";
+        case ENDABSVALUE: 
+            return "Optimizer stopped due to surpassing value threshold.";
         case ENDITERS: 
             return "Optimizer stopped due to number iterations.";
         case ENDFAIL:

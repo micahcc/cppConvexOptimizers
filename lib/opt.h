@@ -125,6 +125,7 @@ enum StopReason
     ENDGRAD,    // end due to gradient below threshold
     ENDSTEP,    // end due to step size below threshold
     ENDVALUE,   // end due to change in value below threshold
+	ENDABSVALUE, // end due to surpassing value threshold
     ENDITERS,   // end due to number iterations
     ENDFAIL     // end tue to some error
 };
@@ -156,6 +157,16 @@ public:
      * @brief Stop when change in function value drops below this value
      */
     double stop_F;
+
+    /**
+     * @brief Stop immediately when value goes above this
+     */
+    double stop_F_over;
+    
+	/**
+     * @brief Stop immediately when value goes below this
+     */
+    double stop_F_under;
 
     /**
      * @brief Stop after this many iterations (does not include linesearch)

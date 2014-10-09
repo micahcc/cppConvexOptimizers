@@ -61,6 +61,16 @@ public:
     double opt_sigma;
 
     /**
+     * @brief Immediately stop of the value drops below this
+     */
+    double opt_lowerbound;
+
+    /**
+     * @brief Immediately stop of the value drops above this
+     */
+    double opt_upperbound;
+
+    /**
      * @brief Maximum number of iterations
      */
     int opt_maxIt; 
@@ -126,6 +136,16 @@ public:
      * @brief Theshold for stopping based on curvature
      */
     double opt_c2;
+
+    /**
+     * @brief Immediately stop of the value drops below this
+     */
+    double opt_lowerbound;
+
+    /**
+     * @brief Immediately stop of the value drops above this
+     */
+    double opt_upperbound;
 
     /**
      * @brief Maximum number of iterations

@@ -92,6 +92,8 @@ StopReason BFGSOpt::optimize()
 
     // update linesearch with minimum step
     m_lsearch.opt_minstep = stepstop;
+	m_lsearch.opt_lowerbound = this->stop_F_under;
+	m_lsearch.opt_upperbound = this->stop_F_over;
 
     const double ZETA = 1;
     MatrixXd& Dk = state_Hinv;
@@ -136,6 +138,8 @@ StopReason BFGSOpt::optimize()
         if(abs(f_xk - f_xkm1) < valstop)
             return ENDVALUE;
 
+        if(f_xk < this->stop_F_under || f_xk > this->stop_F_over)
+            return ENDABSVALUE;
 
         // update information inverse hessian
         tauk = qk.dot(Dk*qk);
