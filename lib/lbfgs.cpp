@@ -137,8 +137,6 @@ VectorXd LBFGSOpt::hessFuncTwoLoop(double gamma, const VectorXd& g)
  * Paper: On the limited memory BFGS method for large scale optimization
  * By: Liu, Dong C., Nocedal, Jorge
  *
- * @param   x_init Starting value for optimization
- *
  * @return          StopReason
  */
 StopReason LBFGSOpt::optimize()

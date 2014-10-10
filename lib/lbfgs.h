@@ -70,6 +70,11 @@ public:
      */
     StopReason optimize();
 
+	/**
+	 * @brief Reset the history
+	 */
+	void reset_history() { m_hist.clear(); };
+
     /**
      * @brief Number of updates to store for the purposes of estimating the 
      * hessian matrix
