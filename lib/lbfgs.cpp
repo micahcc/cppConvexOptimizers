@@ -40,27 +40,6 @@ namespace npl {
  *                  mathematical function
  * @param gradfunc  Function which computes the gradient of energy in the
  *                  underlying mathematical function
- * @param callback  Function which should be called at the end of each
- *                  iteration (for instance, to debug)
- */
-LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, 
-        const GradFunc& gradfunc, const CallBackFunc& callback) 
-        : Optimizer(dim, valfunc, gradfunc, callback), 
-        m_lsearch(valfunc)
-{
-    m_hist.clear();
-    opt_H0inv = VectorXd::Ones(dim);
-    opt_histsize = 6;
-};
-
-/**
- * @brief Constructor for optimizer function.
- *
- * @param dim       Dimension of state variable
- * @param valfunc   Function which computes the energy of the underlying
- *                  mathematical function
- * @param gradfunc  Function which computes the gradient of energy in the
- *                  underlying mathematical function
  * @param gradAndValFunc 
  *                  Function which computes the energy and gradient in the
  *                  underlying mathematical function

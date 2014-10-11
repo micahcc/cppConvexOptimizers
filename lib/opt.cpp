@@ -54,36 +54,6 @@ Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfun
     m_callback = callback;
 };
     
-/**
- * @brief Constructor for optimizer function.
- *
- * @param dim       Dimensionality of state vector
- * @param valfunc   Function which computes the energy of the underlying
- *                  mathematical function
- * @param gradfunc  Function which computes the gradient of energy in the
- *                  underlying mathematical function
- * @param callback  Function which should be called at the end of each
- *                  iteration (for instance, to debug)
- */
-Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc&
-            gradfunc, const CallBackFunc& callback) 
-            : state_x(dim)
-{
-    stop_G = 0.00001;
-    stop_X = 0;
-    stop_F = 0;
-    stop_Its = -1;
-
-    m_compF = valfunc;
-    m_compG = gradfunc;
-    m_compFG = [&](const VectorXd& x, double& value, VectorXd& grad) -> int
-    {
-        return !(valfunc(x, value)==0 && gradfunc(x, grad)==0);
-    };
-
-    m_callback = callback;
-};
-
 std::string Optimizer::explainStop(StopReason r)
 {
     switch(r) {
@@ -227,6 +197,13 @@ int gRosenbrock_G(const VectorXd& x, VectorXd& gradient)
                 200*(x[ii]-x[ii-1]*x[ii-1]);
     
     return 0;
+}
+
+ValGradFunc makeVG(const ValFunc& valF, const GradFunc& gradF)
+{
+	return [&](const VectorXd& x, double& v, VectorXd& grad) {
+		return valF(x, v)==0 && gradF(x, grad)==0;
+	};
 }
 
 }

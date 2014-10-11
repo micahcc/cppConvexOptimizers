@@ -48,26 +48,6 @@ GradientOpt::GradientOpt(size_t dim, const ValFunc& valfunc,
 };
 
 /**
- * @brief Constructor for optimizer function.
- *
- * @param dim       Dimensionality of state vector
- * @param valfunc   Function which computes the energy of the underlying
- *                  mathematical function
- * @param gradfunc  Function which computes the gradient of energy in the
- *                  underlying mathematical function
- * @param callback  Function which should be called at the end of each
- *                  iteration (for instance, to debug)
- */
-GradientOpt::GradientOpt(size_t dim, const ValFunc& valfunc, 
-            const GradFunc& gradfunc, const CallBackFunc& callback)
-            : Optimizer(dim, valfunc, gradfunc, callback)
-{
-    opt_maxstep = 1;
-    opt_init_scale = 1;
-    opt_rdec_scale = 0.999;
-};
-
-/**
  * @brief Optimize Based on a combined value and gradient function
  * Note that during line search, we don't always use the gradient,
  * so if there is additional overhead of the gradient, you can avoid it by

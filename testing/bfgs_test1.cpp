@@ -54,7 +54,8 @@ int generalized_rosenbrock_test(size_t n)
         return -1;
     }
 
-    BFGSOpt optimizer(n , gRosenbrock_V, gRosenbrock_G, callback);
+    BFGSOpt optimizer(n , gRosenbrock_V, gRosenbrock_G, 
+			makeVG(gRosenbrock_V, gRosenbrock_G), callback);
     optimizer.state_x = x;
     optimizer.stop_Its = 10000;
     optimizer.stop_X = 0;

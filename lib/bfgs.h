@@ -46,10 +46,6 @@ public:
     
     BFGSOpt(size_t dim, const ValFunc& valfunc, 
             const GradFunc& gradfunc, 
-            const CallBackFunc& callback = noopCallback);
-
-    BFGSOpt(size_t dim, const ValFunc& valfunc, 
-            const GradFunc& gradfunc, 
             const ValGradFunc& gradAndValFunc, 
             const CallBackFunc& callback = noopCallback);
 
