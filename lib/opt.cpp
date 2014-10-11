@@ -235,4 +235,11 @@ int gRosenbrock_G(const VectorXd& x, VectorXd& gradient)
     return 0;
 }
 
+ValGradFunc makeVG(const ValFunc& valF, const GradFunc& gradF)
+{
+	return [&](const VectorXd& x, double& v, VectorXd& grad) {
+		return valF(x, v)==0 && gradF(x, grad)==0;
+	};
+}
+
 }

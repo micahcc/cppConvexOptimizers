@@ -46,11 +46,6 @@ class LBFGSOpt : virtual public Optimizer
 {
 public:
     
-
-    LBFGSOpt(size_t dim, const ValFunc& valfunc, 
-            const GradFunc& gradfunc, 
-            const CallBackFunc& callback = noopCallback);
-
     LBFGSOpt(size_t dim, const ValFunc& valfunc, 
             const GradFunc& gradfunc, 
             const ValGradFunc& gradAndValFunc, 

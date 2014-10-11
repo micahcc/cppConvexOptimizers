@@ -22,6 +22,7 @@
 #include <cmath>
 #include <cassert>
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 using Eigen::VectorXd;

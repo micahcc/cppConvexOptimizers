@@ -56,6 +56,20 @@ typedef function<int(const VectorXd& x, double& v)> ValFunc;
 typedef function<int(const VectorXd& x, double v, const VectorXd& g, size_t iter)> CallBackFunc;
 
 /**
+ * @brief This function takes a value computation function and gradient
+ * computation function and returns a function that calls both. This is 
+ * a convenience function for problems where the gradient and value are very
+ * different and you dont' want to have to manually write a function that
+ * calls both.
+ *
+ * @param valF Value Computation Function
+ * @param gradF Gradient Computation function
+ *
+ * @return Function taht Calls both Gradient and Value
+ */
+ValGradFunc makeVG(const ValFunc& valF, const GradFunc& gradF);
+
+/**
  * @brief Tests a gradient function using the value function. 
  *
  * @param error     Error between analytical and numeric gradient
@@ -189,20 +203,6 @@ public:
      */
     Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
                 const ValGradFunc& valgradfunc, 
-                const CallBackFunc& callback = noopCallback);
-    
-    /**
-     * @brief Constructor for optimizer function.
-     *
-     * @param dim       Dimensionality of state vector
-     * @param valfunc   Function which computes the energy of the underlying
-     *                  mathematical function
-     * @param gradfunc  Function which computes the gradient of energy in the
-     *                  underlying mathematical function
-     * @param callback  Function which should be called at the end of each
-     *                  iteration (for instance, to debug)
-     */
-    Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
                 const CallBackFunc& callback = noopCallback);
     
     /**
