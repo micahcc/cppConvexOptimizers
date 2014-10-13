@@ -47,6 +47,10 @@ BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc,
         : Optimizer(dim, valfunc, gradfunc, callback), m_lsearch(valfunc)
 {
     state_Hinv = MatrixXd::Identity(dim, dim);
+	
+	opt_ls_s = 1;
+	opt_ls_beta = 0.5;
+	opt_ls_sigma = 1e-5;
 };
 
 /**
@@ -69,6 +73,10 @@ BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
         m_lsearch(valfunc)
 {
     state_Hinv = MatrixXd::Identity(dim, dim);
+	
+	opt_ls_s = 1;
+	opt_ls_beta = 0.5;
+	opt_ls_sigma = 1e-5;
 };
 
 
@@ -86,14 +94,15 @@ BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
  */
 StopReason BFGSOpt::optimize()
 {
-    double gradstop = this->stop_G >= 0 ? this->stop_G*this->stop_G : 0;
-    double stepstop = this->stop_X >= 0 ? this->stop_X*this->stop_X : 0;
+    double gradstop = this->stop_G >= 0 ? this->stop_G : 0;
+    double stepstop = this->stop_X >= 0 ? this->stop_X : 0;
     double valstop = this->stop_F >= 0 ? this->stop_F : 0;
 
-    // update linesearch with minimum step
+    // update linesearch with minimum step, other options from opt_ls
+    m_lsearch.opt_s = opt_ls_s;
     m_lsearch.opt_minstep = stepstop;
-	m_lsearch.opt_lowerbound = this->stop_F_under;
-	m_lsearch.opt_upperbound = this->stop_F_over;
+    m_lsearch.opt_beta = opt_ls_beta;
+    m_lsearch.opt_sigma = opt_ls_sigma;
 
     const double ZETA = 1;
     MatrixXd& Dk = state_Hinv;
@@ -119,7 +128,7 @@ StopReason BFGSOpt::optimize()
         double alpha = m_lsearch.search(f_xk, state_x, gk, dk);
         pk = alpha*dk;
         
-        if(alpha == 0 || pk.squaredNorm() < stepstop)
+        if(alpha == 0 || pk.squaredNorm() < stepstop*stepstop)
             return ENDSTEP;
 
         // step
@@ -132,7 +141,7 @@ StopReason BFGSOpt::optimize()
         m_compFG(state_x, f_xk, gk);
         qk += gk;
 
-        if(gk.squaredNorm() < gradstop)
+        if(gk.squaredNorm() < gradstop*gradstop)
             return ENDGRAD;
         
         if(abs(f_xk - f_xkm1) < valstop)

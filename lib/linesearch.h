@@ -39,8 +39,7 @@ public:
     Armijo(const ValFunc& valFunc);
 
     /**
-     * @brief Maximum step, if this is <= 0, then a quadratic fit will be used 
-     * to estimate a guess.
+     * @brief Maximum step
      */
     double opt_s;
     
@@ -59,16 +58,6 @@ public:
      * @brief Theshold for stopping
      */
     double opt_sigma;
-
-    /**
-     * @brief Immediately stop of the value drops below this
-     */
-    double opt_lowerbound;
-
-    /**
-     * @brief Immediately stop of the value drops above this
-     */
-    double opt_upperbound;
 
     /**
      * @brief Maximum number of iterations
@@ -116,8 +105,7 @@ public:
     double opt_minstep;
 
     /**
-     * @brief Maximum step, if this is <= 0, then a quadratic fit will be used 
-     * to estimate a guess.
+     * @brief Maximum step
      */
     double opt_s;
 
@@ -136,16 +124,6 @@ public:
      * @brief Theshold for stopping based on curvature
      */
     double opt_c2;
-
-    /**
-     * @brief Immediately stop of the value drops below this
-     */
-    double opt_lowerbound;
-
-    /**
-     * @brief Immediately stop of the value drops above this
-     */
-    double opt_upperbound;
 
     /**
      * @brief Maximum number of iterations

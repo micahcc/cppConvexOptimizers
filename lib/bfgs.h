@@ -42,6 +42,12 @@ private:
      */
     MatrixXd state_Hinv;
 
+    /**
+     * @brief Armijo line search class, note that it has several options that
+     * may need to be set
+     */
+    Armijo m_lsearch;
+
 public:
     
     BFGSOpt(size_t dim, const ValFunc& valfunc, 
@@ -52,12 +58,22 @@ public:
             const GradFunc& gradfunc, 
             const ValGradFunc& gradAndValFunc, 
             const CallBackFunc& callback = noopCallback);
+	
+	/**
+     * @brief Maximum step during line search
+     */
+    double opt_ls_s;
 
     /**
-     * @brief Armijo line search class, note that it has several options that
-     * may need to be set
+	 * @brief How quickly to reduce linesearch distance. Power function base,
+	 * values closer to 0 will decrease step size faster than ones close to 1.
      */
-    Armijo m_lsearch;
+    double opt_ls_beta;
+
+    /**
+     * @brief Theshold for stopping linesearch
+     */
+    double opt_ls_sigma;
 
     StopReason optimize();
 };

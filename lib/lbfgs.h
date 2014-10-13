@@ -57,13 +57,6 @@ public:
             const CallBackFunc& callback = noopCallback);
 
     /**
-     * @brief Armijo line search class, note that it has several options that
-     * may need to be set
-     */
-//    Wolfe m_lsearch;
-    Armijo m_lsearch;
-
-    /**
      * @brief Perform LBFGS optimization
      *
      * @return 
@@ -81,24 +74,36 @@ public:
      */
     int opt_histsize;
     
-//    /**
-//     * @brief During linesearch, beta_1 determines the minimum drop in function
-//     * value needed to accept an alpha (stepping scale)
-//     */
-//    double opt_beta1;
-//    
-//    /**
-//     * @brief During linesearch, beta_2 determines the necesary drop in 
-//     * gradient.direction to accept an alpha (stepping scale)
-//     */
-//    double opt_beta2;
-//
+	/**
+     * @brief Maximum step during line search
+     */
+    double opt_ls_s;
+
+    /**
+	 * @brief How quickly to reduce linesearch distance. Power function base,
+	 * values closer to 0 will decrease step size faster than ones close to 1.
+     */
+    double opt_ls_beta;
+
+    /**
+     * @brief Theshold for stopping linesearch
+     */
+    double opt_ls_sigma;
+
     /**
      * @brief Default (initial) value for inverse hessian matrix
      */
     VectorXd opt_H0inv;
 
 private:
+
+    /**
+     * @brief Armijo line search class, note that it has several options that
+     * may need to be set
+     */
+//    Wolfe m_lsearch;
+    Armijo m_lsearch;
+
     /**
      * @brief Stores the approximate value of the inverse hessian.
      * 

@@ -28,16 +28,10 @@ using Eigen::VectorXd;
 
 namespace npl {
 
-Wolfe::Wolfe(const ValFunc& valFunc, const GradFunc& gradFunc) 
+Wolfe::Wolfe(const ValFunc& valFunc, const GradFunc& gradFunc) :
+	opt_minstep(0.1), opt_s(1), opt_beta(0.5), opt_c1(1e-5), opt_c2(0.9),
+	opt_maxIt(20)
 {
-    opt_s = 1;
-    opt_beta = .5; // slowish
-    opt_c1 = 1e-5;
-    opt_c2 = 0.9;
-    opt_maxIt = 20;
-    opt_lowerbound = -INFINITY;
-    opt_upperbound = INFINITY;
-
     compVal = valFunc;
     compGrad = gradFunc;
 }
@@ -62,11 +56,6 @@ double Wolfe::search(double init_val, const VectorXd& init_x, const
         alpha = pow(opt_beta, m)*opt_s;
         x = init_x + alpha*direction;
         compVal(x, v);
-
-        if(v < opt_lowerbound)
-            return alpha;
-        if(v > opt_upperbound)
-            return alpha;
         
         if(init_val - v >= -opt_c1*alpha*gradDotDir) {
             compGrad(x, g);
@@ -78,15 +67,9 @@ double Wolfe::search(double init_val, const VectorXd& init_x, const
     return 0;
 };
 
-Armijo::Armijo(const ValFunc& valFunc) 
+Armijo::Armijo(const ValFunc& valFunc) : opt_s(1), opt_minstep(0.1), 
+	opt_beta(0.5), opt_sigma(1e-5), opt_maxIt(20)
 {
-    opt_s = 1;
-    opt_beta = .5; // slowish
-    opt_sigma = 1e-5;
-    opt_maxIt = 20;
-    opt_lowerbound = -INFINITY;
-    opt_upperbound = INFINITY;
-
     compVal = valFunc;
 }
     
@@ -109,11 +92,6 @@ double Armijo::search(double init_val, const VectorXd& init_x, const
         alpha = pow(opt_beta, m)*opt_s;
         x = init_x + alpha*direction;
         compVal(x, v);
-
-        if(v < opt_lowerbound)
-            return alpha;
-        if(v > opt_upperbound)
-            return alpha;
 
         if(init_val - v >= -opt_sigma*alpha*gradDotDir)
             return alpha;
