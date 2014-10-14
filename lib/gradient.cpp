@@ -20,6 +20,11 @@
 
 #include "gradient.h"
 
+#ifdef DEBUG
+#include <iostream>
+using namespace std;
+#endif
+
 namespace npl
 {
 
@@ -100,6 +105,15 @@ StopReason GradientOpt::optimize()
             return ENDVALUE;
         if(cur < stop_F_under || cur > stop_F_over)
             return ENDABSVALUE;
+
+#ifdef DEBUG 
+		if(prev > cur) {
+			cerr << "Testing Gradient: " << endl;
+			double err;
+    		if(testgrad(err, state_x, 0.00001, 0.001, m_compF, m_compG) != 0) 
+				throw ("Bad gradient!");
+		}
+#endif 
 
         // compute step, (in grad variable)
         grad = -grad*stepsize;
