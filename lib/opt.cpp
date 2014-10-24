@@ -152,8 +152,10 @@ int testgrad(double& error, const VectorXd& x, double stepsize, double tol,
             std::setw(wid) << gbrute[dd] << std::endl;
     }
 
-    error = (gbrute - g).norm();
-    std::cerr << "SumSqr Error: " << error << std::endl;
+    double unscerror = (gbrute - g).norm();
+    error = unscerror/gbrute.norm();
+    std::cerr << "SumSqr Error: " << unscerror << std::endl;
+    std::cerr << "Relative Error: " << error << std::endl;
     if(error > tol)
         return -2;
 
