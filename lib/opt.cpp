@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * @file opt.cpp Contains implementation for base optimizer
- * 
+ *
  *****************************************************************************/
 
 #include "opt.h"
@@ -32,14 +32,14 @@ namespace npl {
  *                  mathematical function
  * @param gradfunc  Function which computes the gradient of energy in the
  *                  underlying mathematical function
- * @param valgradfunc 
+ * @param valgradfunc
  *                  Function which computes the both the energy and
  *                  gradient in the underlying mathematical function
  * @param callback  Function which should be called at the end of each
  *                  iteration (for instance, to debug)
  */
-Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
-        const ValGradFunc& valgradfunc, const CallBackFunc& callback) 
+Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
+        const ValGradFunc& valgradfunc, const CallBackFunc& callback)
         : state_x(dim)
 {
     stop_G = 0;
@@ -55,7 +55,7 @@ Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfun
 
     m_callback = callback;
 };
-    
+
 /**
  * @brief Constructor for optimizer function.
  *
@@ -68,7 +68,7 @@ Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc& gradfun
  *                  iteration (for instance, to debug)
  */
 Optimizer::Optimizer(size_t dim, const ValFunc& valfunc, const GradFunc&
-            gradfunc, const CallBackFunc& callback) 
+            gradfunc, const CallBackFunc& callback)
             : state_x(dim)
 {
     stop_G = 0.00001;
@@ -93,13 +93,13 @@ std::string Optimizer::explainStop(StopReason r)
     switch(r) {
         case ENDGRAD:
             return "Optimizer stopped due to gradient below threshold.";
-        case ENDSTEP: 
+        case ENDSTEP:
             return "Optimizer stopped due to step size below threshold.";
         case ENDVALUE:
             return "Optimizer stopped due to change in value below threshold.";
-        case ENDABSVALUE: 
+        case ENDABSVALUE:
             return "Optimizer stopped due to surpassing value threshold.";
-        case ENDITERS: 
+        case ENDITERS:
             return "Optimizer stopped due to number iterations.";
         case ENDFAIL:
             return "Optimizer due to failure of callback functions.";
@@ -109,7 +109,7 @@ std::string Optimizer::explainStop(StopReason r)
 
 
 /**
- * @brief Tests a gradient function using the value function. 
+ * @brief Tests a gradient function using the value function.
  *
  * @param error     Error between analytical and numeric gradient
  * @param x         Position to test
@@ -120,9 +120,9 @@ std::string Optimizer::explainStop(StopReason r)
  * @param valfunc   Function values compute
  * @param gradfunc  Function gradient compute
  *
- * @return 
+ * @return
  */
-int testgrad(double& error, const VectorXd& x, double stepsize, double tol, 
+int testgrad(double& error, const VectorXd& x, double stepsize, double tol,
         const ValFunc& valfunc, const GradFunc& gradfunc)
 {
     size_t wid = 18;
@@ -130,7 +130,7 @@ int testgrad(double& error, const VectorXd& x, double stepsize, double tol,
     std::cerr << std::setw(wid) << "Dim" << std::setw(wid) << "Analytic" <<
         std::setw(wid) << "Numeric" << std::endl;
     VectorXd g(x.rows());
-    if(gradfunc(x, g) != 0) 
+    if(gradfunc(x, g) != 0)
         return -1;
 
     double v = 0;
@@ -140,11 +140,12 @@ int testgrad(double& error, const VectorXd& x, double stepsize, double tol,
 
     VectorXd step = VectorXd::Zero(x.rows());
     VectorXd gbrute(x.rows());
+    VectorXd xd = x;
     for(size_t dd=0; dd<x.rows(); dd++) {
-        step[dd] = stepsize;
-        if(valfunc(x+step, v) != 0)
+        xd[dd] += stepsize;
+        if(valfunc(xd, v) != 0)
             return -1;
-        step[dd] = 0;
+        xd[dd] = x[dd];
 
         gbrute[dd] = (v-center)/stepsize;
 
@@ -194,7 +195,7 @@ void gRosenbrock_callCounts(size_t& vcalls, size_t& gcalls)
  * @param x Position vector
  * @param v values
  *
- * @return 
+ * @return
  */
 int gRosenbrock_V(const VectorXd& x, double& v)
 {
@@ -215,13 +216,13 @@ int gRosenbrock_V(const VectorXd& x, double& v)
  * @param x Position vector
  * @param gradient Gradient at the position
  *
- * @return 
+ * @return
  */
 int gRosenbrock_G(const VectorXd& x, VectorXd& gradient)
 {
     gRosenbrock_G_calls++;;
 //    gradient.resize(x.rows());
-    
+
     for(size_t ii=1; ii<x.rows()-1; ii++)
         gradient[ii] = 2*(x[ii]-1)-400*(x[ii+1]-x[ii]*x[ii])*x[ii]+
                     200*(x[ii]-x[ii-1]*x[ii-1]);
@@ -229,11 +230,11 @@ int gRosenbrock_G(const VectorXd& x, VectorXd& gradient)
     // boundaries
     size_t ii=0;
     gradient[ii] = 2*(x[ii]-1)-400*(x[ii+1]-x[ii]*x[ii])*x[ii];
-    
+
     ii=x.rows()-1;
     gradient[ii] = 2*(x[ii]-1)-400*(-x[ii]*x[ii])*x[ii]+
                 200*(x[ii]-x[ii-1]*x[ii-1]);
-    
+
     return 0;
 }
 
