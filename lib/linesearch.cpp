@@ -30,7 +30,7 @@ namespace npl {
 
 Wolfe::Wolfe(const ValFunc& valFunc, const GradFunc& gradFunc) :
 	opt_minstep(0.1), opt_s(1), opt_beta(0.5), opt_c1(1e-5), opt_c2(0.9),
-	opt_maxIt(20)
+	opt_maxIt(10000)
 {
     compVal = valFunc;
     compGrad = gradFunc;
@@ -68,7 +68,7 @@ double Wolfe::search(double init_val, const VectorXd& init_x, const
 };
 
 Armijo::Armijo(const ValFunc& valFunc) : opt_s(1), opt_minstep(0.1), 
-	opt_beta(0.5), opt_sigma(1e-5), opt_maxIt(20)
+	opt_beta(0.5), opt_sigma(1e-5), opt_maxIt(10000)
 {
     compVal = valFunc;
 }
