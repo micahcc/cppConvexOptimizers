@@ -118,6 +118,59 @@ std::string Optimizer::explainStop(StopReason r)
  * @param tol       Tolerance, error below the tolerance will cause the
  *                  function to return 0, higher error will cause the function to return -1
  * @param valfunc   Function values compute
+ * @param valgradfunc  Function gradient compute
+ *
+ * @return
+ */
+int testgrad(double& error, const VectorXd& x, double stepsize, double tol,
+        const ValFunc& valfunc, const ValGradFunc& valgradfunc)
+{
+    size_t wid = 18;
+    std::cerr << "Testing Gradient" << std::endl;
+    std::cerr << std::setw(wid) << "Dim" << std::setw(wid) << "Analytic" <<
+        std::setw(wid) << "Numeric" << std::endl;
+    VectorXd g(x.rows());
+    double center = 0;
+    if(valgradfunc(x, center, g) != 0)
+        return -1;
+
+    double v = 0;
+
+    VectorXd step = VectorXd::Zero(x.rows());
+    VectorXd gbrute(x.rows());
+    VectorXd xd = x;
+    for(size_t dd=0; dd<x.rows(); dd++) {
+        xd[dd] += stepsize;
+        if(valfunc(xd, v) != 0)
+            return -1;
+        xd[dd] = x[dd];
+
+        gbrute[dd] = (v-center)/stepsize;
+
+        std::cerr << std::setw(wid) << dd << std::setw(wid) << g[dd] <<
+            std::setw(wid) << gbrute[dd] << std::endl;
+    }
+
+    double unscerror = (gbrute - g).norm();
+    error = unscerror/gbrute.norm();
+    std::cerr << "SumSqr Error: " << unscerror << std::endl;
+    std::cerr << "Relative Error: " << error << std::endl;
+    if(error > tol)
+        return -2;
+
+    return 0;
+}
+
+/**
+ * @brief Tests a gradient function using the value function.
+ *
+ * @param error     Error between analytical and numeric gradient
+ * @param x         Position to test
+ * @param stepsize  Step to take when testing gradient (will be taken in each
+ *                  dimension successively)
+ * @param tol       Tolerance, error below the tolerance will cause the
+ *                  function to return 0, higher error will cause the function to return -1
+ * @param valfunc   Function values compute
  * @param gradfunc  Function gradient compute
  *
  * @return

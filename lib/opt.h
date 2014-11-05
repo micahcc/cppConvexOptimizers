@@ -56,6 +56,23 @@ typedef function<int(const VectorXd& x, double& v)> ValFunc;
 typedef function<int(const VectorXd& x, double v, const VectorXd& g, size_t iter)> CallBackFunc;
 
 /**
+ * @brief Tests a gradient function using the value function.
+ *
+ * @param error     Error between analytical and numeric gradient
+ * @param x         Position to test
+ * @param stepsize  Step to take when testing gradient (will be taken in each
+ *                  dimension successively)
+ * @param tol       Tolerance, error below the tolerance will cause the
+ *                  function to return 0, higher error will cause the function to return -1
+ * @param valfunc   Function values compute
+ * @param valgradfunc  Function gradient compute
+ *
+ * @return
+ */
+int testgrad(double& error, const VectorXd& x, double stepsize, double tol,
+        const ValFunc& valfunc, const ValGradFunc& valgradfunc);
+
+/**
  * @brief Tests a gradient function using the value function. 
  *
  * @param error     Error between analytical and numeric gradient
