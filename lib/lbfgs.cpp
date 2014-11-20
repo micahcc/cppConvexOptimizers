@@ -173,6 +173,12 @@ StopReason LBFGSOpt::optimize()
     m_compFG(state_x, f_xk, gk);
     dk = -gk;
     for(int iter = 0; stop_Its <= 0 || iter < stop_Its; iter++) {
+		// reset history if grad . gk > 0 (ie they go the same direction)
+		if(gk.dot(dk) >= 0) {
+			dk = -gk;
+			m_hist.clear();
+		}
+
         // compute step size
         double alpha = m_lsearch.search(f_xk, state_x, gk, dk);
         pk = alpha*dk;
