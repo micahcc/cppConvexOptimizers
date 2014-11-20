@@ -23,7 +23,7 @@
 
 #include "opt.h"
 
-namespace npl 
+namespace npl
 {
 
 /**
@@ -42,7 +42,7 @@ public:
      * @brief Maximum step
      */
     double opt_s;
-    
+
     /**
      * @brief Minimum non-zero step, once alpha drops below this, returns 0
      */
@@ -62,18 +62,18 @@ public:
     /**
      * @brief Maximum number of iterations
      */
-    int opt_maxIt; 
+    int opt_maxIt;
 
     /**
      * @brief Performs a line search to find the alpha (step size) that
      * satifies the armijo rule.
      *
      * @param init_val Initial energy/function value
-     * @param init_x Initial state 
+     * @param init_x Initial state
      * @param init_g Initial gradient
      * @param direction Direction to search
      *
-     * @return 
+     * @return
      */
     double search(double init_val, const VectorXd& init_x, const VectorXd& init_g,
             const VectorXd& direction);
@@ -85,12 +85,12 @@ private:
 /**
  * @brief Implementation of Armijo approximate line search algorithm
  */
-class Wolfe 
+class Wolfe
 {
 public:
 
     /**
-     * @brief Constructs a line search that satisfies the wolfe conditions 
+     * @brief Constructs a line search that satisfies the wolfe conditions
      * (Armijo and curvature condition). This requires both the gradient and
      * value.
      *
@@ -128,18 +128,18 @@ public:
     /**
      * @brief Maximum number of iterations
      */
-    int opt_maxIt; 
+    int opt_maxIt;
 
     /**
      * @brief Performs a line search to find the alpha (step size) that
      * satifies the armijo rule.
      *
      * @param init_val Initial energy/function value
-     * @param init_x Initial state 
+     * @param init_x Initial state
      * @param init_g Initial gradient
      * @param direction Direction to search
      *
-     * @return 
+     * @return
      */
     double search(double init_val, const VectorXd& init_x, const VectorXd& init_g,
             const VectorXd& direction);
@@ -153,14 +153,14 @@ private:
 //class StrongWolfe
 //{
 //public:
-//    StrongWolfe(const ComputeValFunc& valFunc const ComputeGradFunc& gradFunc) 
+//    StrongWolfe(const ComputeValFunc& valFunc const ComputeGradFunc& gradFunc)
 //    {
 //        compVal = valFunc;
 //        compGrad = gradFunc;
 //    }
 //
 //    /**
-//     * @brief Maximum step, if this is <= 0, then a quadratic fit will be used 
+//     * @brief Maximum step, if this is <= 0, then a quadratic fit will be used
 //     * to estimate a guess.
 //     */
 //    double opt_s;
@@ -179,7 +179,7 @@ private:
 //    /**
 //     * @brief Maximum number of iterations
 //     */
-//    int opt_maxIt; 
+//    int opt_maxIt;
 //
 //    double search(double v_init, const VectorXd& x_init, const VectorXd& dir)
 //    {
@@ -207,16 +207,16 @@ private:
 //#ifdef DEBUG
 //            fprintf(stderr, "Alpha: %f, Init Val: %f, Val: %f, C1: %f, phi'(0): %f\n",
 //                    alpha, v_init, v, opt_c1, dPhi_dAlpha_init);
-//#endif 
-//            if(v > v_init + opt_c1*alpha*dPhi_dAlpha_init || 
-//                        (iter>0 && v >= v_prev )) 
+//#endif
+//            if(v > v_init + opt_c1*alpha*dPhi_dAlpha_init ||
+//                        (iter>0 && v >= v_prev ))
 //                return zoom(v_prev, v);
-// 
+//
 //            double dPhi_dAlpha = g.dot(dir);
 //#ifdef DEBUG
 //            fprintf(stderr, "phi'(alpha): %f, C: %f, phi'(0): %f\n",
 //                    dPhi_dAlpha, opt_c2, dPhi_dAlpha_init);
-//#endif 
+//#endif
 //            if(fabs(dPhi_dAlpha) <= -opt_c2*dPhi_dAlpha_init)
 //                return alpha;
 //
@@ -233,13 +233,13 @@ private:
 //        return 0;
 //    }
 //
-//    double zoom(double alpha_low, double alpha_hi) 
+//    double zoom(double alpha_low, double alpha_hi)
 //    {
 //#ifdef DEBUG
 //            fprintf(stderr, "Zoom(%f, %f)\n", alpha_low, alpha_hi);
-//#endif 
+//#endif
 //
-//            
+//
 //    }
 //
 //private:
@@ -251,5 +251,5 @@ private:
  */
 }
 
-#endif 
+#endif
 

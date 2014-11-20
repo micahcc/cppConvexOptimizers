@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file bfgs.cpp Implemenation of the BFGSOpt class which implements 
+ * @file bfgs.cpp Implemenation of the BFGSOpt class which implements
  * a BFGS optimization (energy minimization) algorithm.
- * 
+ *
  *****************************************************************************/
 
 #include "bfgs.h"
@@ -42,8 +42,8 @@ namespace npl {
  * @param callback  Function which should be called at the end of each
  *                  iteration (for instance, to debug)
  */
-BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, 
-        const GradFunc& gradfunc, const CallBackFunc& callback) 
+BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc,
+        const GradFunc& gradfunc, const CallBackFunc& callback)
         : Optimizer(dim, valfunc, gradfunc, callback), m_lsearch(valfunc)
 {
     state_Hinv = MatrixXd::Identity(dim, dim);
@@ -61,14 +61,14 @@ BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc,
  *                  mathematical function
  * @param gradfunc  Function which computes the gradient of energy in the
  *                  underlying mathematical function
- * @param gradAndValFunc 
+ * @param gradAndValFunc
  *                  Function which computes the energy and gradient in the
  *                  underlying mathematical function
  * @param callback  Function which should be called at the end of each
  *                  iteration (for instance, to debug)
  */
-BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
-        const ValGradFunc& gradAndValFunc, const CallBackFunc& callback) 
+BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
+        const ValGradFunc& gradAndValFunc, const CallBackFunc& callback)
         : Optimizer(dim, valfunc, gradfunc, gradAndValFunc, callback),
         m_lsearch(valfunc)
 {
@@ -83,10 +83,10 @@ BFGSOpt::BFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
 /**
  * @brief Optimize Based on a value function and gradient function
  * separately. When both gradient and value are needed it will call update,
- * when it needs just the gradient it will call gradFunc, and when it just 
+ * when it needs just the gradient it will call gradFunc, and when it just
  * needs the value it will cal valFunc. This is always the most efficient,
- * assuming there is additional cost of computing the gradient or value, but 
- * its obviously more complicated. 
+ * assuming there is additional cost of computing the gradient or value, but
+ * its obviously more complicated.
  *
  * @param   x_init Starting value for optimization
  *
@@ -110,12 +110,12 @@ StopReason BFGSOpt::optimize()
     double f_xk; // value at current position
     double f_xkm1; // value at previous position
 
-    VectorXd xkprev; 
+    VectorXd xkprev;
     double tauk = 0;
     VectorXd pk, qk, dk, vk;
 
     //D(k+1) += p(k)p(k)'   - D(k)q(k)q(k)'D(k) + Z(k)T(k)v(k)v(k)'
-    //          ----------    ----------------- 
+    //          ----------    -----------------
     //         (p(k)'q(k))      q(k)'D(k)q(k)
     m_compFG(state_x, f_xk, gk);
     for(int iter = 0; stop_Its <= 0 || iter < stop_Its; iter++) {
@@ -127,14 +127,14 @@ StopReason BFGSOpt::optimize()
         // compute step size
         double alpha = m_lsearch.search(f_xk, state_x, gk, dk);
         pk = alpha*dk;
-        
+
         if(alpha == 0 || pk.squaredNorm() < stepstop*stepstop)
             return ENDSTEP;
 
         // step
         xkprev = state_x;
         state_x += pk;
-        
+
         // update gradient, value
         qk = -gk;
         f_xkm1 = f_xk;
@@ -143,7 +143,7 @@ StopReason BFGSOpt::optimize()
 
         if(gk.squaredNorm() < gradstop*gradstop)
             return ENDGRAD;
-        
+
         if(abs(f_xk - f_xkm1) < valstop)
             return ENDVALUE;
 
@@ -152,7 +152,7 @@ StopReason BFGSOpt::optimize()
 
         // update information inverse hessian
         tauk = qk.dot(Dk*qk);
-        if(tauk < 1E-20) 
+        if(tauk < 1E-20)
             vk.setZero();
         else
             vk = pk/pk.dot(qk) - Dk*qk/tauk;
@@ -161,13 +161,13 @@ StopReason BFGSOpt::optimize()
 		cerr << "iter: " << iter << endl;
 		cerr << "pk: " << pk.transpose() << endl;
 		cerr << "qk: " << qk.transpose() << endl;
-		cerr << "vk: " << vk.transpose() << endl; 
+		cerr << "vk: " << vk.transpose() << endl;
 #endif
         Dk += pk*pk.transpose()/pk.dot(qk) - Dk*qk*qk.transpose()*Dk/
                     (qk.dot(Dk*qk)) + ZETA*tauk*vk*vk.transpose();
 
     }
-                   
+
     return ENDFAIL;
 }
 

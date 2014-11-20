@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file lbfgs.cpp Implemenation of the LBFGSOpt class which implements 
+ * @file lbfgs.cpp Implemenation of the LBFGSOpt class which implements
  * a LBFGS optimization (energy minimization) algorithm.
- * 
+ *
  *****************************************************************************/
 
 #include "lbfgs.h"
@@ -43,9 +43,9 @@ namespace npl {
  * @param callback  Function which should be called at the end of each
  *                  iteration (for instance, to debug)
  */
-LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, 
-        const GradFunc& gradfunc, const CallBackFunc& callback) 
-        : Optimizer(dim, valfunc, gradfunc, callback), 
+LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc,
+        const GradFunc& gradfunc, const CallBackFunc& callback)
+        : Optimizer(dim, valfunc, gradfunc, callback),
         m_lsearch(valfunc)
 {
     m_hist.clear();
@@ -65,14 +65,14 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc,
  *                  mathematical function
  * @param gradfunc  Function which computes the gradient of energy in the
  *                  underlying mathematical function
- * @param gradAndValFunc 
+ * @param gradAndValFunc
  *                  Function which computes the energy and gradient in the
  *                  underlying mathematical function
  * @param callback  Function which should be called at the end of each
  *                  iteration (for instance, to debug)
  */
-LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc, 
-        const ValGradFunc& gradAndValFunc, const CallBackFunc& callback) 
+LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
+        const ValGradFunc& gradAndValFunc, const CallBackFunc& callback)
         : Optimizer(dim, valfunc, gradfunc, gradAndValFunc, callback),
         m_lsearch(valfunc)
 {
@@ -94,7 +94,7 @@ LBFGSOpt::LBFGSOpt(size_t dim, const ValFunc& valfunc, const GradFunc& gradfunc,
  * @param it Position in history list
  *
  * @return Direction (d) after right multiplying d by H_k, the hessian
- * estimate for position it, 
+ * estimate for position it,
  */
 VectorXd LBFGSOpt::hessFuncTwoLoop(double gamma, const VectorXd& g)
 {
@@ -105,7 +105,7 @@ VectorXd LBFGSOpt::hessFuncTwoLoop(double gamma, const VectorXd& g)
     int ii = 0;
     for(auto it = m_hist.cbegin(); it != m_hist.cend(); ++it, ++ii) {
         double rho = std::get<0>(*it);
-        const VectorXd& y = std::get<1>(*it); // or q 
+        const VectorXd& y = std::get<1>(*it); // or q
         const VectorXd& s = std::get<2>(*it); // or p
         alpha[ii] = rho*s.dot(q);
         q -= alpha[ii]*y;
@@ -115,7 +115,7 @@ VectorXd LBFGSOpt::hessFuncTwoLoop(double gamma, const VectorXd& g)
     ii = m_hist.size()-1;
     for(auto it = m_hist.crbegin(); it != m_hist.crend(); ++it, --ii) {
         double rho = std::get<0>(*it);
-        const VectorXd& y = std::get<1>(*it); // or q 
+        const VectorXd& y = std::get<1>(*it); // or q
         const VectorXd& s = std::get<2>(*it); // or p
         double beta = rho*y.dot(r);
         r += s*(alpha[ii]-beta);
@@ -132,15 +132,15 @@ VectorXd LBFGSOpt::hessFuncTwoLoop(double gamma, const VectorXd& g)
  * @param it Position in history list
  *
  * @return Direction (d) after right multiplying d by H_k, the hessian
- * estimate for position it, 
+ * estimate for position it,
  */
 /**
  * @brief Optimize Based on a value function and gradient function
  * separately. When both gradient and value are needed it will call update,
- * when it needs just the gradient it will call gradFunc, and when it just 
+ * when it needs just the gradient it will call gradFunc, and when it just
  * needs the value it will cal valFunc. This is always the most efficient,
- * assuming there is additional cost of computing the gradient or value, but 
- * its obviously more complicated. 
+ * assuming there is additional cost of computing the gradient or value, but
+ * its obviously more complicated.
  *
  * Paper: On the limited memory BFGS method for large scale optimization
  * By: Liu, Dong C., Nocedal, Jorge
@@ -168,7 +168,7 @@ StopReason LBFGSOpt::optimize()
     double gamma = 1;
 
     //D(k+1) += p(k)p(k)'   - D(k)q(k)q(k)'D(k) + Z(k)T(k)v(k)v(k)'
-    //          ----------    ----------------- 
+    //          ----------    -----------------
     //         (p(k)'q(k))      q(k)'D(k)q(k)
     m_compFG(state_x, f_xk, gk);
     dk = -gk;
@@ -185,24 +185,24 @@ StopReason LBFGSOpt::optimize()
         // compute step size
         double alpha = m_lsearch.search(f_xk, state_x, gk, dk);
         pk = alpha*dk;
-        
+
         if(alpha == 0 || pk.squaredNorm() < stepstop*stepstop) {
             return ENDSTEP;
         }
 
         // step
         state_x += pk;
-        
+
         // update gradient, value
         qk = -gk;
         f_xkm1 = f_xk;
         m_compFG(state_x, f_xk, gk);
         qk += gk;
 
-        if(gk.squaredNorm() < gradstop*gradstop) 
+        if(gk.squaredNorm() < gradstop*gradstop)
             return ENDGRAD;
-        
-        if(abs(f_xk - f_xkm1) < valstop) 
+
+        if(abs(f_xk - f_xkm1) < valstop)
             return ENDVALUE;
 
         if(f_xk < this->stop_F_under || f_xk > this->stop_F_over)
@@ -222,7 +222,7 @@ StopReason LBFGSOpt::optimize()
         dk = -hessFuncTwoLoop(gamma, gk);
         m_callback(dk, f_xk, gk, iter);
     }
-                   
+
     return ENDFAIL;
 }
 
