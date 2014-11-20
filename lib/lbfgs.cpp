@@ -177,6 +177,9 @@ StopReason LBFGSOpt::optimize()
 		if(gk.dot(dk) >= 0) {
 			dk = -gk;
 			m_hist.clear();
+#ifdef DEBUG
+			cerr << "Clearing LBFGS History!" << endl;
+#endif //DEBUG
 		}
 
         // compute step size
