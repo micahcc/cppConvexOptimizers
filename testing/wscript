@@ -3,9 +3,9 @@ def build(bld):
     bld.program(install_path='${PREFIX}/tests', features='test', 
             target='bfgs_test1', 
             source='bfgs_test1.cpp', 
-            use='bfgs opt')
+            use='optimizers')
 
     bld.program(install_path='${PREFIX}/tests', features='test', 
             target='lbfgs_test1', 
             source='lbfgs_test1.cpp', 
-            use='opt lbfgs')
+            use='optimizers')

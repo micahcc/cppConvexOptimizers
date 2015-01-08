@@ -128,6 +128,7 @@ void gRosenbrock_callCounts(size_t& vcalls, size_t& gcalls);
  *
  * @return 
  */
+inline
 int noopCallback(const VectorXd& x, double value, const VectorXd& grad, size_t iter)
 {
     (void)(x);

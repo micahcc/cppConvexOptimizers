@@ -1,22 +1,11 @@
 
 def build(bld):
-    bld.shlib(target = 'opt',
-            source = 'opt.cpp',
+    bld.stlib(target = 'optimizers', 
+            source = 'opt.cpp gradient.cpp bfgs.cpp lbfgs.cpp linesearch.cpp',
             use='EIGEN',
             export_includes = ['.'])
-    bld.shlib(target = 'linesearch',
-            source = 'linesearch.cpp',
-            use='opt EIGEN',
-            export_includes = ['.'])
-    bld.shlib(target = 'gradient',
-            source = 'gradient.cpp',
-            use='opt EIGEN',
-            export_includes = ['.'])
-    bld.shlib(target = 'bfgs',
-            source = 'bfgs.cpp',
-            use='EIGEN opt linesearch',
-            export_includes = ['.'])
-    bld.shlib(target = 'lbfgs',
-            source = 'lbfgs.cpp',
-            use='EIGEN opt linesearch',
+    
+    bld.shlib(target = 'optimizersDyn', 
+            source = 'opt.cpp gradient.cpp bfgs.cpp lbfgs.cpp linesearch.cpp',
+            use='EIGEN',
             export_includes = ['.'])
