@@ -1,11 +1,13 @@
 
 def build(bld):
-    bld.stlib(target = 'optimizers', 
+    bld.stlib(target = 'optimizersStatic',
+            install_path = '${PREFIX}/lib',
             source = 'opt.cpp gradient.cpp bfgs.cpp lbfgs.cpp linesearch.cpp',
             use='EIGEN',
             export_includes = ['.'])
-    
-    bld.shlib(target = 'optimizersDyn', 
+
+    bld.shlib(target = 'optimizersDyn',
+            install_path = '${PREFIX}/lib',
             source = 'opt.cpp gradient.cpp bfgs.cpp lbfgs.cpp linesearch.cpp',
             use='EIGEN',
             export_includes = ['.'])

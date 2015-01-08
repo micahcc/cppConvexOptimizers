@@ -10,7 +10,7 @@ def configure(conf):
     join = os.path.join
     isabs = os.path.isabs
     abspath = os.path.abspath
-    
+
     opts = vars(conf.options)
     conf.load('compiler_cxx python waf_unit_test')
 
@@ -19,13 +19,19 @@ def configure(conf):
     conf.env.RPATH = []
     if opts['enable_rpath'] or opts['enable_build_rpath']:
         conf.env.RPATH.append('$ORIGIN/../lib')
-    
+
     if opts['enable_rpath'] or opts['enable_install_rpath']:
         conf.env.RPATH.append('$ORIGIN/../lib')
-    
+
+
+    conf.env.STATIC_LINK = False
+    if opts['static']:
+        conf.env.LIBPOST = 'Static'
+    else:
+        conf.env.LIBPOST = 'Dyn'
+
     conf.env.LINKFLAGS = ['-lm']
     conf.env.CXXFLAGS = ['-Wall', '-Wextra', '-Wno-sign-compare', '-std=c++11']
-    conf.env.STATIC_LINK = False
 
     if opts['profile']:
         conf.env.DEFINES.append('DEBUG=1')
@@ -40,13 +46,12 @@ def configure(conf):
     elif opts['native']:
         conf.env.DEFINES.append('NDEBUG=1')
         conf.env.CXXFLAGS.extend(['-O3', '-march=native'])
-    
+
     conf.check(header_name='stdio.h', features='cxx cxxprogram', mandatory=True)
 
-        
-    ############################### 
+    ###############################
     # Library Configuration
-    ############################### 
+    ###############################
     conf.check_cfg(atleast_pkgconfig_version='0.0.0')
     conf.check_cfg(package='eigen3', uselib_store='EIGEN',
                 args=['--cflags', '--libs'])
@@ -55,16 +60,17 @@ def options(ctx):
     ctx.load('compiler_cxx waf_unit_test')
 
     gr = ctx.get_option_group('configure options')
-    
+
     gr.add_option('--enable-rpath', action='store_true', default = False, help = 'Set RPATH to build/install dirs')
     gr.add_option('--enable-install-rpath', action='store_true', default = False, help = 'Set RPATH to install dir only')
     gr.add_option('--enable-build-rpath', action='store_true', default = False, help = 'Set RPATH to build dir only')
-    
+
     gr.add_option('--debug', action='store_true', default = False, help = 'Build with debug flags')
     gr.add_option('--profile', action='store_true', default = False, help = 'Build with debug and profiler flags')
     gr.add_option('--release', action='store_true', default = False, help = 'Build with tuned compiler optimizations')
     gr.add_option('--native', action='store_true', default = False, help = 'Build with highly specific compiler optimizations')
-    
+    gr.add_option('--static', action='store_true', default = False, help = 'Statically link programs')
+
 def build(bld):
     with open("lib/version.h", "w") as f:
         f.write('#define __version__ "%s"\n\n' % gitversion())
@@ -95,7 +101,7 @@ def gitversion():
             master.close();
         else:
             mastertxt = headtxt[0].strip()
-    
+
     except EnvironmentError:
         print("unable to get HEAD")
         return "unknown"
